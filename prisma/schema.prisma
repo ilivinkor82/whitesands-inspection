@@ -1,0 +1,67 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime @default(now())
+
+  createdOrderLines OrderLine[] @relation("CreatedBy")
+  updatedOrderLines OrderLine[] @relation("UpdatedBy")
+  imports           Import[]
+}
+
+model OrderLine {
+  id String @id @default(cuid())
+
+  orderNo     String // 오더번호
+  productCode String // 상품코드
+  colorCode   String // 컬러코드 (컬러별 SKU)
+  productName String // 상품명
+  colorName   String // 컬러
+
+  requestedQty Int? // 출고요청수량
+  shipDate     DateTime? // 이동일자 (주희물류→제이에스)
+  shippedQty   Int? // 이동수량
+
+  inspectedQty Int? // 검수수량
+  defectQty    Int? // 불량수량
+  // 양품수량 = 검수수량 - 불량수량 은 저장하지 않고 항상 계산한다 (src/lib/compute.ts)
+
+  returnDate DateTime? // 복귀일자 (제이에스→주희물류)
+  returnQty  Int? // 복귀수량
+  // 차이 = 이동수량 - 복귀수량 은 저장하지 않고 항상 계산한다
+
+  notes String? // 비고
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  updatedById String?
+  createdBy   User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?    @relation("UpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([orderNo, productCode, colorCode], name: "orderLineKey")
+  @@index([orderNo])
+}
+
+model Import {
+  id            String   @id @default(cuid())
+  filename      String
+  type          String // SHIPMENT | INSPECTION | MIXED
+  uploadedById  String
+  uploadedBy    User     @relation(fields: [uploadedById], references: [id])
+  uploadedAt    DateTime @default(now())
+  insertedCount Int
+  updatedCount  Int
+  skippedCount  Int
+  errorCount    Int
+}
