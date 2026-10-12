@@ -182,20 +182,24 @@ export function BarcodeClient() {
 
       {step === "order" && (
         <div className="card">
-          <h3>1단계) 오더번호 입력</h3>
-          <input
-            type="text"
-            list="order-suggestions"
+          <h3>1단계) 오더번호 선택</h3>
+          <select
             value={orderNo}
             onChange={(e) => setOrderNo(e.target.value)}
-            placeholder="예: CX261012-01"
-            style={{ width: 280 }}
-          />
-          <datalist id="order-suggestions">
+            style={{ width: 280, padding: "6px 8px" }}
+          >
+            <option value="">-- 업로드된 발주서 중 선택 --</option>
             {orderSuggestions.map((o) => (
-              <option key={o} value={o} />
+              <option key={o} value={o}>
+                {o}
+              </option>
             ))}
-          </datalist>
+          </select>
+          {orderSuggestions.length === 0 && (
+            <p style={{ color: "#888", marginTop: 8 }}>
+              아직 업로드된 발주서가 없습니다 — 먼저 엑셀 업로드로 오더를 등록하세요.
+            </p>
+          )}
           <div style={{ marginTop: 12 }}>
             <button className="btn" disabled={!orderNo.trim()} onClick={() => setStep("product")}>
               다음
