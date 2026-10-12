@@ -86,7 +86,7 @@ export function OrdersTable() {
         <p>불러오는 중...</p>
       ) : (
         <div style={{ overflowX: "auto" }}>
-          <table>
+          <table className="orders-table">
             <thead>
               <tr>
                 <th>오더번호</th>
@@ -112,7 +112,9 @@ export function OrdersTable() {
                   <td>{row.orderNo}</td>
                   <td>{row.productCode}</td>
                   <td>{row.colorCode}</td>
-                  <td style={{ whiteSpace: "normal", textAlign: "left" }}>{row.productName}</td>
+                  <td className="ellipsis" title={row.productName}>
+                    {row.productName}
+                  </td>
                   <td>{row.colorName}</td>
                   <td>{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>
@@ -163,7 +165,6 @@ export function OrdersTable() {
                     <input
                       type="text"
                       defaultValue={row.notes ?? ""}
-                      style={{ width: 140 }}
                       onBlur={(e) => patchRow(row.id, { notes: e.target.value || null })}
                     />
                   </td>

@@ -10,7 +10,7 @@ body {
 }
 
 .page {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
 }
@@ -66,6 +66,43 @@ input[type="text"] {
   width: 90px;
   padding: 2px 4px;
   font-size: 13px;
+}
+
+/* 15개 컬럼을 스크롤 없이 한 화면에 보이도록 압축한 현황 테이블 전용 스타일 */
+.orders-table {
+  font-size: 12px;
+  width: auto;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 4px 5px;
+}
+
+.orders-table input[type="number"] {
+  width: 44px;
+  font-size: 12px;
+  padding: 2px;
+}
+
+.orders-table input[type="date"] {
+  width: 98px;
+  font-size: 11px;
+  padding: 2px;
+}
+
+.orders-table input[type="text"] {
+  width: 110px;
+  font-size: 12px;
+  padding: 2px;
+}
+
+.orders-table td.ellipsis {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .card {
