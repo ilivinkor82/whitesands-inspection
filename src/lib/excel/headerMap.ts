@@ -25,11 +25,11 @@ interface FieldDef {
 }
 
 export const FIELD_DEFS: FieldDef[] = [
-  { field: "orderNo", type: "string", category: "key", headers: ["오더번호"] },
+  { field: "orderNo", type: "string", category: "key", headers: ["오더번호", "오더제목"] },
   { field: "productCode", type: "string", category: "key", headers: ["상품코드"] },
-  { field: "colorCode", type: "string", category: "key", headers: ["컬러코드"] },
-  { field: "productName", type: "string", category: "other", headers: ["상품명"] },
-  { field: "colorName", type: "string", category: "other", headers: ["컬러"] },
+  { field: "colorCode", type: "string", category: "key", headers: ["컬러코드", "상품컬러코드"] },
+  { field: "productName", type: "string", category: "other", headers: ["상품명", "상품명(수집)"] },
+  { field: "colorName", type: "string", category: "other", headers: ["컬러", "옵션(수집)"] },
   {
     field: "requestedQty",
     type: "int",
@@ -40,9 +40,9 @@ export const FIELD_DEFS: FieldDef[] = [
     field: "shipDate",
     type: "date",
     category: "shipment",
-    headers: ["이동일자(주희→JS)", "이동일자", "이동일자(주희물류→제이에스)"],
+    headers: ["이동일자(주희→JS)", "이동일자", "이동일자(주희물류→제이에스)", "출고일"],
   },
-  { field: "shippedQty", type: "int", category: "shipment", headers: ["이동수량"] },
+  { field: "shippedQty", type: "int", category: "shipment", headers: ["이동수량", "수량"] },
   { field: "inspectedQty", type: "int", category: "inspection", headers: ["검수수량"] },
   { field: "defectQty", type: "int", category: "inspection", headers: ["불량수량"] },
   {
@@ -52,7 +52,7 @@ export const FIELD_DEFS: FieldDef[] = [
     headers: ["복귀일자(JS→주희)", "복귀일자", "복귀일자(제이에스→주희물류)"],
   },
   { field: "returnQty", type: "int", category: "inspection", headers: ["복귀수량"] },
-  { field: "notes", type: "string", category: "other", headers: ["비고"] },
+  { field: "notes", type: "string", category: "other", headers: ["비고", "전산처리방법"] },
 ];
 
 // 엑셀에 있어도 항상 무시하는 열 (계산값 — 신뢰하지 않음)
@@ -76,6 +76,19 @@ export function normalizeHeader(raw: string): string {
 
 export function headerToField(raw: string): OrderLineField | null {
   return HEADER_TO_FIELD.get(normalizeHeader(raw)) ?? null;
+}
+
+// 일부 헤더는 값을 그대로 쓰지 않고 가공해야 한다 (예: 택배 발주서의 "옵션(수집)"은
+// "색상: 베이지" 형태라 컬러명만 뽑아내야 함). 헤더 원문 기준으로 등록한다.
+const HEADER_EXTRACTORS: Record<string, (raw: string) => string> = {
+  [normalizeHeader("옵션(수집)")]: (raw) => {
+    const m = raw.match(/색상\s*[:：]\s*(.+)/);
+    return (m ? m[1] : raw).trim();
+  },
+};
+
+export function headerExtractor(raw: string): ((v: string) => string) | null {
+  return HEADER_EXTRACTORS[normalizeHeader(raw)] ?? null;
 }
 
 export function fieldType(field: OrderLineField): FieldType {

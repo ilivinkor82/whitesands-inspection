@@ -3,6 +3,7 @@ import {
   FIELD_DEFS,
   KEY_FIELDS,
   fieldType,
+  headerExtractor,
   headerToField,
   isIgnoredComputedHeader,
   type OrderLineField,
@@ -118,7 +119,10 @@ export function parseWorkbook(buffer: Buffer, sheetName?: string): ParseResult {
         if (error) errors.push(`${header}: ${error}`);
         data[field] = value;
       } else {
-        const { value, error } = coerceString(cellValue);
+        const extractor = headerExtractor(header);
+        const sourceValue =
+          extractor && typeof cellValue === "string" ? extractor(cellValue) : cellValue;
+        const { value, error } = coerceString(sourceValue);
         if (error) errors.push(`${header}: ${error}`);
         data[field] = value;
       }

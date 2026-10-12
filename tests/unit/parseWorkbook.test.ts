@@ -103,4 +103,55 @@ describe("parseWorkbook", () => {
     expect(result.headerFieldsPresent).not.toContain("goodQty" as never);
     expect(result.rows[0].data).not.toHaveProperty("goodQty");
   });
+
+  it("택배 발주서 양식(오더제목/상품컬러코드/옵션(수집)/수량/출고일)을 인식하고 개인정보 열은 무시한다", () => {
+    const buffer = buildWorkbookBuffer([
+      [
+        "출고일",
+        "오더제목",
+        "전산처리방법",
+        "수령인(Recipient)",
+        "받는분연락처",
+        "주소",
+        "상품명(수집)",
+        "수량",
+        "상품코드",
+        "상품컬러코드",
+        "옵션(수집)",
+      ],
+      [
+        "2026-10-08",
+        "CX261008-01",
+        "매장출고등록(주희물류->롯데백화점 잠실점)",
+        "김양자",
+        "01093682501",
+        "서울시 광진구 광장동 145-8",
+        "[화이트샌즈 그린라벨] 25SS 500 AIR 초경량 UV 우양산 아크라",
+        1,
+        "GKM61Z9Z",
+        "GKM61Z9ZBEX",
+        "색상: 베이지",
+      ],
+    ]);
+
+    const result = parseWorkbook(buffer);
+    const row = result.rows[0];
+
+    expect(row.error).toBeNull();
+    expect(row.data.orderNo).toBe("CX261008-01");
+    expect(row.data.productCode).toBe("GKM61Z9Z");
+    expect(row.data.colorCode).toBe("GKM61Z9ZBEX");
+    expect(row.data.colorName).toBe("베이지"); // "색상: 베이지"에서 추출
+    expect(row.data.shippedQty).toBe(1);
+    expect(row.data.notes).toMatch(/매장출고등록/);
+
+    // 개인정보 열은 어떤 필드로도 매핑되지 않아 row.data에 값 자체가 절대 들어가지 않는다
+    expect(result.ignoredColumns).toEqual(
+      expect.arrayContaining(["수령인(Recipient)", "받는분연락처", "주소"])
+    );
+    for (const value of Object.values(row.data)) {
+      expect(value).not.toBe("김양자");
+      expect(value).not.toBe("01093682501");
+    }
+  });
 });
