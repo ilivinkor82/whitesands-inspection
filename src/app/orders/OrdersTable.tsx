@@ -112,9 +112,7 @@ export function OrdersTable() {
                   <td>{row.orderNo}</td>
                   <td>{row.productCode}</td>
                   <td>{row.colorCode}</td>
-                  <td className="ellipsis" title={row.productName}>
-                    {row.productName}
-                  </td>
+                  <td style={{ textAlign: "left", whiteSpace: "nowrap" }}>{row.productName}</td>
                   <td>{row.colorName}</td>
                   <td>{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>

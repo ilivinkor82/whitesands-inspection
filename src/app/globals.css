@@ -103,14 +103,6 @@ input[type="text"] {
   padding: 2px;
 }
 
-.orders-table td.ellipsis {
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
-}
-
 .card {
   background: white;
   border-radius: 8px;
