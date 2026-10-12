@@ -75,25 +75,34 @@ input[type="text"] {
   font-size: 13px;
 }
 
-/* 15개 컬럼을 스크롤 없이 한 화면에 보이도록 압축한 현황 테이블 전용 스타일 */
+/* 현황 테이블 — 박스(.page-wide) 폭에 맞춰 늘어나고, 상품명 컬럼이 남는 공간을 가져간다 */
 .orders-table {
   font-size: 12px;
-  width: auto;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .orders-table th,
 .orders-table td {
   padding: 4px 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orders-table td.product-name {
+  white-space: normal;
+  word-break: break-word;
+  text-overflow: clip;
 }
 
 .orders-table th {
   white-space: normal;
   line-height: 1.4;
   word-break: keep-all; /* 한글 단어 중간에서 끊지 않고, <br/>로 지정한 곳에서만 줄바꿈 */
+  text-align: center;
 }
 
-.orders-table td.text-left,
-.orders-table th.text-left {
+.orders-table td.text-left {
   text-align: left;
 }
 

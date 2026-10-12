@@ -87,13 +87,30 @@ export function OrdersTable() {
       ) : (
         <div style={{ overflowX: "auto" }}>
           <table className="orders-table">
+            <colgroup>
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "6%" }} />
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "19%" }} />
+              <col style={{ width: "6%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "4%" }} />
+              <col style={{ width: "7%" }} />
+            </colgroup>
             <thead>
               <tr>
-                <th className="text-left">오더번호</th>
-                <th className="text-left">상품코드</th>
-                <th className="text-left">컬러코드</th>
-                <th className="text-left">상품명</th>
-                <th className="text-left">컬러</th>
+                <th>오더번호</th>
+                <th>상품코드</th>
+                <th>컬러코드</th>
+                <th>상품명</th>
+                <th>컬러</th>
                 <th>출고요청수량</th>
                 <th>
                   이동일자
@@ -111,7 +128,7 @@ export function OrdersTable() {
                 </th>
                 <th>복귀수량</th>
                 <th>차이</th>
-                <th className="text-left">비고</th>
+                <th>비고</th>
               </tr>
             </thead>
             <tbody>
@@ -120,7 +137,7 @@ export function OrdersTable() {
                   <td className="text-left">{row.orderNo}</td>
                   <td className="text-left">{row.productCode}</td>
                   <td className="text-left">{row.colorCode}</td>
-                  <td className="text-left">{row.productName}</td>
+                  <td className="text-left product-name">{row.productName}</td>
                   <td className="text-left">{row.colorName}</td>
                   <td className="text-right">{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>
