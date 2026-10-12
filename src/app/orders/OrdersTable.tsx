@@ -89,34 +89,42 @@ export function OrdersTable() {
           <table className="orders-table">
             <thead>
               <tr>
-                <th>오더번호</th>
-                <th>상품코드</th>
-                <th>컬러코드</th>
-                <th>상품명</th>
-                <th>컬러</th>
+                <th className="text-left">오더번호</th>
+                <th className="text-left">상품코드</th>
+                <th className="text-left">컬러코드</th>
+                <th className="text-left">상품명</th>
+                <th className="text-left">컬러</th>
                 <th>출고요청수량</th>
-                <th>이동일자(주희→제이에스)</th>
+                <th>
+                  이동일자
+                  <br />
+                  (주희→제이에스)
+                </th>
                 <th>이동수량</th>
                 <th>검수수량</th>
                 <th>불량수량</th>
                 <th>양품수량</th>
-                <th>복귀일자(제이에스→주희)</th>
+                <th>
+                  복귀일자
+                  <br />
+                  (제이에스→주희)
+                </th>
                 <th>복귀수량</th>
                 <th>차이</th>
-                <th>비고</th>
+                <th className="text-left">비고</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} style={{ opacity: savingId === row.id ? 0.5 : 1 }}>
-                  <td>{row.orderNo}</td>
-                  <td>{row.productCode}</td>
-                  <td>{row.colorCode}</td>
-                  <td style={{ textAlign: "left", whiteSpace: "nowrap" }}>{row.productName}</td>
-                  <td>{row.colorName}</td>
-                  <td>{row.requestedQty ?? ""}</td>
+                  <td className="text-left">{row.orderNo}</td>
+                  <td className="text-left">{row.productCode}</td>
+                  <td className="text-left">{row.colorCode}</td>
+                  <td className="text-left">{row.productName}</td>
+                  <td className="text-left">{row.colorName}</td>
+                  <td className="text-right">{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>
-                  <td>{row.shippedQty ?? ""}</td>
+                  <td className="text-right">{row.shippedQty ?? ""}</td>
                   <td>
                     <input
                       type="number"
@@ -139,7 +147,7 @@ export function OrdersTable() {
                       }
                     />
                   </td>
-                  <td>{row.goodQty ?? ""}</td>
+                  <td className="text-right">{row.goodQty ?? ""}</td>
                   <td>
                     <input
                       type="date"
@@ -158,8 +166,8 @@ export function OrdersTable() {
                       }
                     />
                   </td>
-                  <td>{row.diffQty ?? ""}</td>
-                  <td>
+                  <td className="text-right">{row.diffQty ?? ""}</td>
+                  <td className="text-left">
                     <input
                       type="text"
                       defaultValue={row.notes ?? ""}
