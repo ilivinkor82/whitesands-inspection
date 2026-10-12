@@ -128,3 +128,35 @@ input[type="text"] {
   margin-bottom: 16px;
   font-weight: bold;
 }
+
+.scan-banner {
+  margin: 20px 0;
+  padding: 32px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 40px;
+  font-weight: bold;
+  color: white;
+}
+
+.scan-banner.match {
+  background: #2e9b4f;
+}
+
+.scan-banner.mismatch {
+  background: #c0392b;
+}
+
+.scan-banner.idle {
+  background: #c7ccd4;
+  font-size: 20px;
+  font-weight: normal;
+}
+
+.product-pick-row {
+  cursor: pointer;
+}
+
+.product-pick-row:hover {
+  background: #eef1f6;
+}

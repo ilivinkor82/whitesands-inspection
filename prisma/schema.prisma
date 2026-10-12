@@ -47,3 +47,37 @@ model Import {
   skippedCount  Int
   errorCount    Int
 }
+
+// 품번/컬러/사이즈별 바코드 레지스트리 — 바코드 검수 화면에서 스캔값과 대조하는 기준표
+model BarcodeProduct {
+  id          String   @id @default(cuid())
+  productCode String // 상품코드
+  productName String // 상품명
+  colorName   String // 컬러
+  sizeName    String // 사이즈
+  barcode1    String // 기본 바코드
+  barcode2    String? // 보조 바코드 (있는 경우)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productCode, colorName, sizeName], name: "barcodeProductKey")
+  @@index([barcode1])
+}
+
+// 바코드 스캔 1건 = 1행. 오더번호는 자유 입력(해당 오더 작업임을 표시)이며 OrderLine과 강제 연결하지 않는다.
+model ScanLog {
+  id              String   @id @default(cuid())
+  scannedAt       DateTime @default(now())
+  orderNo         String
+  productCode     String
+  productName     String
+  colorName       String
+  sizeName        String
+  scannedBarcode  String
+  expectedBarcode String?
+  result          String // MATCH | MISMATCH
+
+  @@index([orderNo])
+  @@index([scannedAt])
+}

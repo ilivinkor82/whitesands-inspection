@@ -17,6 +17,7 @@ export function TopNav() {
       <a href="/orders">현황</a>
       <a href="/import">엑셀 업로드</a>
       <a href="/import/history">업로드 이력</a>
+      <a href="/barcode">바코드 검수</a>
       <span className="spacer" />
       <button className="btn secondary" onClick={handleLogout}>
         로그아웃
