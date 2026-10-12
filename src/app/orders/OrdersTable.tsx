@@ -95,12 +95,12 @@ export function OrdersTable() {
                 <th>상품명</th>
                 <th>컬러</th>
                 <th>출고요청수량</th>
-                <th>이동일자</th>
+                <th>이동일자(주희→제이에스)</th>
                 <th>이동수량</th>
                 <th>검수수량</th>
                 <th>불량수량</th>
                 <th>양품수량</th>
-                <th>복귀일자</th>
+                <th>복귀일자(제이에스→주희)</th>
                 <th>복귀수량</th>
                 <th>차이</th>
                 <th>비고</th>
