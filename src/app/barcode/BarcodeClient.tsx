@@ -35,6 +35,7 @@ export function BarcodeClient() {
 
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const scanInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,6 +44,13 @@ export function BarcodeClient() {
       .then((r) => r.json())
       .then((d) => setOrderSuggestions(d.orderNumbers ?? []))
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((d) => setIsAdmin(d.account?.role === "admin"))
+      .catch(() => setIsAdmin(false));
   }, []);
 
   useEffect(() => {
@@ -155,13 +163,17 @@ export function BarcodeClient() {
   return (
     <div>
       <div className="card" style={{ marginBottom: 16, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <button className="btn secondary" onClick={handleTemplateDownload}>
-          엑셀 양식 다운로드
-        </button>
-        <label className="btn secondary" style={{ cursor: "pointer" }}>
-          {importing ? "업로드 중..." : "엑셀 업로드(추가/병합)"}
-          <input type="file" accept=".xlsx,.xls" onChange={handleImport} style={{ display: "none" }} disabled={importing} />
-        </label>
+        {isAdmin && (
+          <button className="btn secondary" onClick={handleTemplateDownload}>
+            엑셀 양식 다운로드
+          </button>
+        )}
+        {isAdmin && (
+          <label className="btn secondary" style={{ cursor: "pointer" }}>
+            {importing ? "업로드 중..." : "엑셀 업로드(추가/병합)"}
+            <input type="file" accept=".xlsx,.xls" onChange={handleImport} style={{ display: "none" }} disabled={importing} />
+          </label>
+        )}
         <button className="btn secondary" onClick={handleHistoryDownload}>
           검수내역 다운로드{orderNo ? ` (${orderNo})` : " (전체)"}
         </button>
