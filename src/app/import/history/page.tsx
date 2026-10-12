@@ -15,7 +15,7 @@ export default async function ImportHistoryPage() {
     <>
       <TopNav />
       <div className="page">
-        <h1>업로드 이력</h1>
+        <h1>검수등록 이력</h1>
         <div className="card">
           <table>
             <thead>
@@ -43,7 +43,7 @@ export default async function ImportHistoryPage() {
               ))}
               {imports.length === 0 && (
                 <tr>
-                  <td colSpan={7}>업로드 이력이 없습니다.</td>
+                  <td colSpan={7}>검수등록 이력이 없습니다.</td>
                 </tr>
               )}
             </tbody>
