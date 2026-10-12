@@ -33,7 +33,7 @@ export function TopNav() {
     <nav className="topnav">
       <strong>화이트샌즈 검수 관리</strong>
       <a href="/orders">현황</a>
-      {isAdmin && <a href="/import">발주서 업로드</a>}
+      {isAdmin && <a href="/import">검수제품 등록</a>}
       {isAdmin && <a href="/import/history">검수등록 이력</a>}
       <a href="/barcode">바코드 검수</a>
       <span className="spacer" />

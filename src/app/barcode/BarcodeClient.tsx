@@ -170,7 +170,7 @@ export function BarcodeClient() {
         )}
         {isAdmin && (
           <label className="btn secondary" style={{ cursor: "pointer" }}>
-            {importing ? "업로드 중..." : "엑셀 업로드(추가/병합)"}
+            {importing ? "업로드 중..." : "제품정보 업로드 (엑셀)"}
             <input type="file" accept=".xlsx,.xls" onChange={handleImport} style={{ display: "none" }} disabled={importing} />
           </label>
         )}
@@ -197,7 +197,7 @@ export function BarcodeClient() {
           </select>
           {orderSuggestions.length === 0 && (
             <p style={{ color: "#888", marginTop: 8 }}>
-              아직 업로드된 발주서가 없습니다 — 먼저 엑셀 업로드로 오더를 등록하세요.
+              아직 업로드된 발주서가 없습니다 — 먼저 "검수제품 등록" 메뉴에서 오더를 등록하세요.
             </p>
           )}
           <div style={{ marginTop: 12 }}>
