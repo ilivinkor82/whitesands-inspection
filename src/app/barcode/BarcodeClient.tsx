@@ -24,7 +24,12 @@ export function BarcodeClient() {
   const [selectedProduct, setSelectedProduct] = useState<BarcodeProductRow | null>(null);
 
   const [scanValue, setScanValue] = useState("");
-  const [lastResult, setLastResult] = useState<{ result: "MATCH" | "MISMATCH"; scanned: string; expected: string | null } | null>(null);
+  const [lastResult, setLastResult] = useState<{
+    result: "MATCH" | "MISMATCH";
+    scanned: string;
+    expected: string | null;
+    orderLineStatus: "UPDATED" | "NOT_FOUND" | "AMBIGUOUS";
+  } | null>(null);
   const [counts, setCounts] = useState({ matchCount: 0, mismatchCount: 0 });
   const [scanning, setScanning] = useState(false);
 
@@ -97,7 +102,12 @@ export function BarcodeClient() {
       });
       const data = await res.json();
       if (res.ok) {
-        setLastResult({ result: data.result, scanned: code, expected: data.expectedBarcode });
+        setLastResult({
+          result: data.result,
+          scanned: code,
+          expected: data.expectedBarcode,
+          orderLineStatus: data.orderLineStatus,
+        });
         setCounts({ matchCount: data.matchCount, mismatchCount: data.mismatchCount });
       }
     } finally {
@@ -269,6 +279,13 @@ export function BarcodeClient() {
               <div style={{ fontSize: 16, marginTop: 8, fontWeight: "normal" }}>
                 스캔: {lastResult.scanned}
                 {lastResult.result === "MISMATCH" && ` / 기대: ${lastResult.expected ?? "(등록된 바코드 없음)"}`}
+              </div>
+              <div style={{ fontSize: 13, marginTop: 4, fontWeight: "normal", opacity: 0.9 }}>
+                {lastResult.orderLineStatus === "UPDATED" && "✓ 현황(검수수량/불량수량)에 반영됨"}
+                {lastResult.orderLineStatus === "NOT_FOUND" &&
+                  "⚠ 현황에서 이 오더번호+상품+컬러를 찾지 못해 반영되지 않음"}
+                {lastResult.orderLineStatus === "AMBIGUOUS" &&
+                  "⚠ 현황에 같은 조건의 행이 여러 개라 반영되지 않음 — 직접 확인 필요"}
               </div>
             </div>
           ) : (
