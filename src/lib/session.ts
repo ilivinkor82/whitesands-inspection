@@ -2,9 +2,7 @@ import { cookies } from "next/headers";
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
 
 export interface SessionData {
-  userId?: string;
-  username?: string;
-  displayName?: string;
+  authenticated?: boolean;
 }
 
 function sessionSecret(): string {
@@ -33,8 +31,7 @@ export async function getSession(): Promise<IronSession<SessionData>> {
   return getIronSession<SessionData>(await cookies(), sessionOptions);
 }
 
-export async function getSessionUser(): Promise<SessionData | null> {
+export async function isAuthenticated(): Promise<boolean> {
   const session = await getSession();
-  if (!session.userId) return null;
-  return { userId: session.userId, username: session.username, displayName: session.displayName };
+  return session.authenticated === true;
 }

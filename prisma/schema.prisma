@@ -7,18 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  passwordHash String
-  displayName  String
-  createdAt    DateTime @default(now())
-
-  createdOrderLines OrderLine[] @relation("CreatedBy")
-  updatedOrderLines OrderLine[] @relation("UpdatedBy")
-  imports           Import[]
-}
-
 model OrderLine {
   id String @id @default(cuid())
 
@@ -42,12 +30,8 @@ model OrderLine {
 
   notes String? // 비고
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdById String?
-  updatedById String?
-  createdBy   User?    @relation("CreatedBy", fields: [createdById], references: [id])
-  updatedBy   User?    @relation("UpdatedBy", fields: [updatedById], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([orderNo, productCode, colorCode], name: "orderLineKey")
   @@index([orderNo])
@@ -57,8 +41,6 @@ model Import {
   id            String   @id @default(cuid())
   filename      String
   type          String // SHIPMENT | INSPECTION | MIXED
-  uploadedById  String
-  uploadedBy    User     @relation(fields: [uploadedById], references: [id])
   uploadedAt    DateTime @default(now())
   insertedCount Int
   updatedCount  Int

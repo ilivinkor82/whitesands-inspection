@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser } from "@/lib/session";
 import { fieldType, type OrderLineField } from "@/lib/excel/headerMap";
 import { valuesEqual } from "@/lib/excel/diff";
 import type { ParsedValue } from "@/lib/excel/parseWorkbook";
@@ -38,11 +37,6 @@ function coerceForField(field: OrderLineField, value: ParsedValue): string | num
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getSessionUser();
-  if (!user?.userId) {
-    return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 });
-  }
-
   const body = await request.json().catch(() => null);
   const parsed = CommitSchema.safeParse(body);
   if (!parsed.success) {
@@ -71,8 +65,6 @@ export async function POST(request: NextRequest) {
             colorCode: String(data.colorCode ?? ""),
             productName: String(data.productName ?? ""),
             colorName: String(data.colorName ?? ""),
-            createdById: user.userId,
-            updatedById: user.userId,
           } as never,
         });
         insertedCount += 1;
@@ -107,7 +99,7 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      await tx.orderLine.update({ where: { id: row.id }, data: { ...data, updatedById: user.userId } });
+      await tx.orderLine.update({ where: { id: row.id }, data });
       updatedCount += 1;
     }
   });
@@ -116,7 +108,6 @@ export async function POST(request: NextRequest) {
     data: {
       filename,
       type: importType,
-      uploadedById: user.userId,
       insertedCount,
       updatedCount,
       skippedCount,

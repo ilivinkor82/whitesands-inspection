@@ -8,8 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "db:migrate:dev": "prisma migrate dev",
-    "db:migrate": "prisma migrate deploy",
-    "create-user": "tsx scripts/create-user.ts"
+    "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
     "next": "^14.2.18",
@@ -17,7 +16,6 @@
     "react-dom": "^18.3.1",
     "@prisma/client": "^5.22.0",
     "iron-session": "^8.0.4",
-    "bcryptjs": "^2.4.3",
     "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
@@ -26,8 +24,6 @@
     "@types/node": "^20.14.9",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@types/bcryptjs": "^2.4.6",
-    "dotenv": "^16.4.5",
     "prisma": "^5.22.0",
     "tsx": "^4.19.2",
     "vitest": "^2.1.5"

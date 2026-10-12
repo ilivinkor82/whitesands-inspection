@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { computeDerived } from "@/lib/compute";
-import { getSessionUser } from "@/lib/session";
 
 // 작업자 화면에서 인라인으로 고칠 수 있는 필드만 허용한다.
 // 출고 관련 필드(출고요청수량/이동일자/이동수량)는 엑셀 임포트로만 들어온다.
@@ -20,7 +19,6 @@ const PatchSchema = z.object({
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await getSessionUser();
   const body = await request.json().catch(() => null);
   const parsed = PatchSchema.safeParse(body);
   if (!parsed.success) {
@@ -34,7 +32,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const updated = await prisma.orderLine.update({
     where: { id },
-    data: { ...parsed.data, updatedById: user?.userId ?? null },
+    data: parsed.data,
   });
 
   return NextResponse.json({ row: computeDerived(updated) });

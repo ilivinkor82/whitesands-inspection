@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
   if (cookie) {
     try {
       const data = await unsealData<SessionData>(cookie, { password: sessionOptions.password as string });
-      authenticated = Boolean(data.userId);
+      authenticated = data.authenticated === true;
     } catch {
       authenticated = false;
     }

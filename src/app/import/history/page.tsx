@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
 export default async function ImportHistoryPage() {
   const imports = await prisma.import.findMany({
     orderBy: { uploadedAt: "desc" },
-    include: { uploadedBy: { select: { displayName: true } } },
     take: 100,
   });
 
@@ -23,7 +22,6 @@ export default async function ImportHistoryPage() {
                 <th>업로드 시각</th>
                 <th>파일명</th>
                 <th>종류</th>
-                <th>업로드한 사람</th>
                 <th>신규</th>
                 <th>수정</th>
                 <th>건너뜀</th>
@@ -35,7 +33,6 @@ export default async function ImportHistoryPage() {
                   <td>{imp.uploadedAt.toISOString().slice(0, 16).replace("T", " ")}</td>
                   <td>{imp.filename}</td>
                   <td>{imp.type}</td>
-                  <td>{imp.uploadedBy.displayName}</td>
                   <td>{imp.insertedCount}</td>
                   <td>{imp.updatedCount}</td>
                   <td>{imp.skippedCount}</td>
@@ -43,7 +40,7 @@ export default async function ImportHistoryPage() {
               ))}
               {imports.length === 0 && (
                 <tr>
-                  <td colSpan={7}>업로드 이력이 없습니다.</td>
+                  <td colSpan={6}>업로드 이력이 없습니다.</td>
                 </tr>
               )}
             </tbody>

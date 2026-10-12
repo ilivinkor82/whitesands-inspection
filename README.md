@@ -6,7 +6,7 @@
 ## 기능
 
 - 엑셀(.xlsx) 업로드 → 변경 미리보기(diff) → 선택 반영 (`/import`)
-- 여러 작업자가 각자 계정으로 로그인해 동시에 조회/수정 (`/orders`)
+- 공용 비밀번호 1개로 로그인 (작업자 계정 구분 없음), 외부인 접근만 차단 — 로그인 후 여러 작업자가 동시에 조회/수정 (`/orders`)
 - 검수수량/불량수량/복귀일자/복귀수량/비고를 인라인으로 수정
 - 양품수량(=검수-불량), 차이(=이동-복귀)는 항상 자동 계산 — 수동 입력/임포트로 덮어쓸 수 없음
 - 업로드 이력 (`/import/history`)
@@ -15,11 +15,12 @@
 
 ```bash
 npm install
-cp .env.example .env.local   # DATABASE_URL, SESSION_SECRET을 채운다
+cp .env.example .env.local   # DATABASE_URL, SESSION_SECRET, APP_PASSWORD를 채운다
 npx prisma migrate dev --name init
-npm run create-user -- --username worker1 --password temp1234 --displayName "작업자1"
 npm run dev
 ```
+
+로그인은 `APP_PASSWORD`에 설정한 값 하나만 입력하면 된다 — 작업자별 아이디 없음.
 
 `fixtures/sample-shipment.xlsx`, `fixtures/sample-inspection.xlsx`로 `/import` 플로우를
 바로 테스트할 수 있다 (`npx tsx scripts/generate-fixtures.ts`로 재생성 가능).
@@ -46,12 +47,10 @@ npx tsc --noEmit     # 타입 체크
    - 새 프로젝트 생성 (가능하면 한국에서 가까운 리전 선택)
    - Dashboard → Connection Details → **Pooled connection** 문자열 복사 → `DATABASE_URL`로 사용
 
-3. **로컬에서 마이그레이션 + 계정 생성**
+3. **로컬에서 마이그레이션**
    ```bash
-   # .env.local에 Neon DATABASE_URL과 SESSION_SECRET(openssl rand -base64 32) 설정
+   # .env.local에 Neon DATABASE_URL, SESSION_SECRET(openssl rand -base64 32), APP_PASSWORD 설정
    npx prisma migrate deploy
-   npm run create-user -- --username <작업자아이디> --password <임시비밀번호> --displayName <이름>
-   # 작업자마다 반복
    ```
 
 4. **Vercel (무료 Hobby)**
@@ -60,6 +59,7 @@ npx tsc --noEmit     # 타입 체크
    - Settings → Environment Variables에 추가:
      - `DATABASE_URL` = Neon pooled connection string (3번과 동일)
      - `SESSION_SECRET` = 3번과 동일한 값 (배포마다 바뀌면 기존 로그인 세션이 전부 풀림)
+     - `APP_PASSWORD` = 작업자들에게 공유할 로그인 비밀번호
    - Deploy 클릭
 
 5. **확인**
@@ -82,9 +82,9 @@ npx tsc --noEmit     # 타입 체크
 
 ## 알려진 한계 / 다음 단계로 미룬 것
 
-- 필드 단위 변경 이력(누가 언제 무엇을 바꿨는지 전부 기록)은 만들지 않았다 — 지금은
-  각 행의 `updatedById`/`updatedAt`과 임포트 단위 이력만 남는다.
-- 비밀번호 재설정 UI 없음 — 관리자가 `npm run create-user`를 같은 username으로 다시
-  실행하면 비밀번호가 갱신된다.
+- 로그인이 공용 비밀번호 1개라 **누가 입력/수정했는지는 구분할 수 없다** — 외부인
+  접근 차단만 된다. 작업자별 구분이 필요해지면 계정 기반 로그인으로 다시 바꿔야 한다.
+- 비밀번호를 바꾸려면 Vercel/`.env.local`의 `APP_PASSWORD` 값을 바꾸고 재배포하면 된다
+  (바뀌는 순간 기존에 로그인해 있던 모든 사람도 다시 로그인해야 함).
 - Playwright e2e 테스트는 아직 작성하지 않았다 (Vitest 단위 테스트만 있음) — 실제
   배포 후 §5 체크리스트를 수동으로 1회 돌려본다.
