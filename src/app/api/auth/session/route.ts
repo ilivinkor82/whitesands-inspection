@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { isAuthenticated } from "@/lib/session";
+import { getCurrentAccount } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const authenticated = await isAuthenticated();
-  return NextResponse.json({ authenticated });
+  const account = await getCurrentAccount();
+  return NextResponse.json({ authenticated: account != null, account });
 }

@@ -21,6 +21,7 @@ export default async function ImportHistoryPage() {
             <thead>
               <tr>
                 <th>업로드 시각(KST)</th>
+                <th>업로드한 사람</th>
                 <th>파일명</th>
                 <th>종류</th>
                 <th>신규</th>
@@ -32,6 +33,7 @@ export default async function ImportHistoryPage() {
               {imports.map((imp) => (
                 <tr key={imp.id}>
                   <td>{formatDateTimeKST(imp.uploadedAt)}</td>
+                  <td>{imp.uploadedBy ?? "-"}</td>
                   <td>{imp.filename}</td>
                   <td>{imp.type}</td>
                   <td>{imp.insertedCount}</td>
@@ -41,7 +43,7 @@ export default async function ImportHistoryPage() {
               ))}
               {imports.length === 0 && (
                 <tr>
-                  <td colSpan={6}>업로드 이력이 없습니다.</td>
+                  <td colSpan={7}>업로드 이력이 없습니다.</td>
                 </tr>
               )}
             </tbody>

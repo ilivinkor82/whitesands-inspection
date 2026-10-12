@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { fieldType, type OrderLineField } from "@/lib/excel/headerMap";
 import { valuesEqual } from "@/lib/excel/diff";
 import type { ParsedValue } from "@/lib/excel/parseWorkbook";
+import { getCurrentAccount } from "@/lib/session";
 
 const ValueSchema = z.union([z.string(), z.number(), z.null()]);
 
@@ -44,6 +45,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { filename, importType, newRows, updatedRows } = parsed.data;
+  const account = await getCurrentAccount();
+  const accountId = account?.accountId ?? null;
 
   let insertedCount = 0;
   let updatedCount = 0;
@@ -65,6 +68,7 @@ export async function POST(request: NextRequest) {
             colorCode: String(data.colorCode ?? ""),
             productName: String(data.productName ?? ""),
             colorName: String(data.colorName ?? ""),
+            updatedBy: accountId,
           } as never,
         });
         insertedCount += 1;
@@ -99,7 +103,7 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      await tx.orderLine.update({ where: { id: row.id }, data });
+      await tx.orderLine.update({ where: { id: row.id }, data: { ...data, updatedBy: accountId } });
       updatedCount += 1;
     }
   });
@@ -108,6 +112,7 @@ export async function POST(request: NextRequest) {
     data: {
       filename,
       type: importType,
+      uploadedBy: accountId,
       insertedCount,
       updatedCount,
       skippedCount,

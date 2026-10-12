@@ -37,7 +37,7 @@ function LoginForm() {
     <div className="page" style={{ maxWidth: 400, marginTop: 80 }}>
       <div className="card">
         <h1>화이트샌즈 검수 관리</h1>
-        <p>공용 비밀번호를 입력하세요.</p>
+        <p>본인에게 발급된 비밀번호를 입력하세요.</p>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 12 }}>
             <label>

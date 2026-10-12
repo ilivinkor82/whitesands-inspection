@@ -15,9 +15,10 @@ export async function GET(request: NextRequest) {
   });
 
   const rows = [
-    ["시간(KST)", "오더번호", "상품코드", "상품명", "컬러", "사이즈", "스캔된바코드", "기대바코드", "결과"],
+    ["시간(KST)", "스캔한 사람", "오더번호", "상품코드", "상품명", "컬러", "사이즈", "스캔된바코드", "기대바코드", "결과"],
     ...logs.map((log) => [
       formatDateTimeKST(log.scannedAt),
+      log.scannedBy ?? "",
       log.orderNo,
       log.productCode,
       log.productName,

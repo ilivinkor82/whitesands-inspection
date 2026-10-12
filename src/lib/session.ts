@@ -3,6 +3,9 @@ import { getIronSession, type IronSession, type SessionOptions } from "iron-sess
 
 export interface SessionData {
   authenticated?: boolean;
+  accountId?: string;
+  displayName?: string;
+  role?: "admin" | "worker";
 }
 
 function sessionSecret(): string {
@@ -34,4 +37,10 @@ export async function getSession(): Promise<IronSession<SessionData>> {
 export async function isAuthenticated(): Promise<boolean> {
   const session = await getSession();
   return session.authenticated === true;
+}
+
+export async function getCurrentAccount(): Promise<{ accountId: string; displayName: string; role?: string } | null> {
+  const session = await getSession();
+  if (!session.authenticated || !session.accountId) return null;
+  return { accountId: session.accountId, displayName: session.displayName ?? session.accountId, role: session.role };
 }

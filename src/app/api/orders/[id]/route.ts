@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { computeDerived } from "@/lib/compute";
+import { getCurrentAccount } from "@/lib/session";
 
 // 작업자 화면에서 인라인으로 고칠 수 있는 필드만 허용한다.
 // 출고 관련 필드(출고요청수량/이동일자/이동수량)는 엑셀 임포트로만 들어온다.
@@ -30,9 +31,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: "행을 찾을 수 없습니다" }, { status: 404 });
   }
 
+  const account = await getCurrentAccount();
   const updated = await prisma.orderLine.update({
     where: { id },
-    data: parsed.data,
+    data: { ...parsed.data, updatedBy: account?.accountId ?? null },
   });
 
   return NextResponse.json({ row: computeDerived(updated) });

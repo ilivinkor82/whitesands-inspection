@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { kstDayRange } from "@/lib/datetime";
+import { getCurrentAccount } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,8 @@ async function reflectToOrderLine(
   orderNo: string,
   productCode: string,
   colorName: string,
-  isMatch: boolean
+  isMatch: boolean,
+  accountId: string | null
 ): Promise<OrderLineUpdateStatus> {
   const candidates = await prisma.orderLine.findMany({
     where: { orderNo, productCode, colorName },
@@ -51,6 +53,7 @@ async function reflectToOrderLine(
     data: {
       inspectedQty: (target.inspectedQty ?? 0) + 1,
       defectQty: isMatch ? target.defectQty : (target.defectQty ?? 0) + 1,
+      updatedBy: accountId,
     },
   });
   return "UPDATED";
@@ -64,6 +67,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { orderNo, productCode, productName, colorName, sizeName, scannedBarcode } = parsed.data;
+  const account = await getCurrentAccount();
+  const accountId = account?.accountId ?? null;
 
   const product = await prisma.barcodeProduct.findUnique({
     where: { barcodeProductKey: { productCode, colorName, sizeName } },
@@ -74,10 +79,10 @@ export async function POST(request: NextRequest) {
   const result = matches ? "MATCH" : "MISMATCH";
 
   await prisma.scanLog.create({
-    data: { orderNo, productCode, productName, colorName, sizeName, scannedBarcode, expectedBarcode, result },
+    data: { orderNo, productCode, productName, colorName, sizeName, scannedBarcode, expectedBarcode, result, scannedBy: accountId },
   });
 
-  const orderLineStatus = await reflectToOrderLine(orderNo, productCode, colorName, matches);
+  const orderLineStatus = await reflectToOrderLine(orderNo, productCode, colorName, matches, accountId);
   const counts = await todayCounts(orderNo);
 
   return NextResponse.json({ result, expectedBarcode, orderLineStatus, ...counts });

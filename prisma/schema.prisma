@@ -32,6 +32,7 @@ model OrderLine {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  updatedBy String? // 마지막으로 이 행을 바꾼 계정 id (로그인 계정의 accountId, 예: "jsc")
 
   @@unique([orderNo, productCode, colorCode], name: "orderLineKey")
   @@index([orderNo])
@@ -42,6 +43,7 @@ model Import {
   filename      String
   type          String // SHIPMENT | INSPECTION | MIXED
   uploadedAt    DateTime @default(now())
+  uploadedBy    String? // 업로드한 계정 id
   insertedCount Int
   updatedCount  Int
   skippedCount  Int
@@ -77,6 +79,7 @@ model ScanLog {
   scannedBarcode  String
   expectedBarcode String?
   result          String // MATCH | MISMATCH
+  scannedBy       String? // 스캔한 계정 id
 
   @@index([orderNo])
   @@index([scannedAt])

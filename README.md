@@ -9,7 +9,10 @@
   "발주서_택배" 형식(오더제목/상품컬러코드/옵션(수집)/수량/출고일 등)을 그대로 인식한다 —
   수령인/주소/전화번호 같은 개인정보 열은 아예 필드 매핑이 없어서 읽지도 저장하지도 않고
   "무시된 열"로만 표시됨
-- 공용 비밀번호 1개로 로그인 (작업자 계정 구분 없음), 외부인 접근만 차단 — 로그인 후 여러 작업자가 동시에 조회/수정 (`/orders`)
+- 로그인 — 아이디 입력창은 없고 **비밀번호만으로 계정을 구분**한다. 마스터/작업자 등
+  계정마다 다른 비밀번호를 `ACCOUNTS_JSON`에 등록해두면, 어떤 비밀번호를 입력했는지로
+  로그인한 사람이 정해진다. 상단에 로그인한 사람 표시, 수정/업로드/스캔 기록에도
+  계정 id가 같이 남는다 (`/orders`, `/import/history`, 스캔 내역 다운로드)
 - 검수수량/불량수량/복귀일자/복귀수량/비고를 인라인으로 수정
 - 양품수량(=검수-불량), 차이(=이동-복귀)는 항상 자동 계산 — 수동 입력/임포트로 덮어쓸 수 없음
 - 업로드 이력 (`/import/history`)
@@ -25,12 +28,13 @@
 
 ```bash
 npm install
-cp .env.example .env.local   # DATABASE_URL, SESSION_SECRET, APP_PASSWORD를 채운다
+cp .env.example .env.local   # DATABASE_URL, SESSION_SECRET, ACCOUNTS_JSON을 채운다
 npx prisma migrate dev --name init
 npm run dev
 ```
 
-로그인은 `APP_PASSWORD`에 설정한 값 하나만 입력하면 된다 — 작업자별 아이디 없음.
+로그인 화면엔 비밀번호 칸 하나만 있다. `ACCOUNTS_JSON`에 등록해둔 비밀번호 중 어느 것을
+입력하느냐로 계정이 정해진다 (예: `test1234` → 마스터, `jsc1234` → 작업자(jsc)).
 
 `fixtures/sample-shipment.xlsx`, `fixtures/sample-inspection.xlsx`로 `/import` 플로우를
 바로 테스트할 수 있다 (`npx tsx scripts/generate-fixtures.ts`로 재생성 가능).
@@ -59,7 +63,7 @@ npx tsc --noEmit     # 타입 체크
 
 3. **로컬에서 마이그레이션**
    ```bash
-   # .env.local에 Neon DATABASE_URL, SESSION_SECRET(openssl rand -base64 32), APP_PASSWORD 설정
+   # .env.local에 Neon DATABASE_URL, SESSION_SECRET(openssl rand -base64 32), ACCOUNTS_JSON 설정
    npx prisma migrate deploy
    ```
 
@@ -69,7 +73,7 @@ npx tsc --noEmit     # 타입 체크
    - Settings → Environment Variables에 추가:
      - `DATABASE_URL` = Neon pooled connection string (3번과 동일)
      - `SESSION_SECRET` = 3번과 동일한 값 (배포마다 바뀌면 기존 로그인 세션이 전부 풀림)
-     - `APP_PASSWORD` = 작업자들에게 공유할 로그인 비밀번호
+     - `ACCOUNTS_JSON` = 계정별 비밀번호 목록 (.env.example 형식 그대로, 한 줄 JSON)
    - Deploy 클릭
 
 5. **확인**
@@ -92,10 +96,11 @@ npx tsc --noEmit     # 타입 체크
 
 ## 알려진 한계 / 다음 단계로 미룬 것
 
-- 로그인이 공용 비밀번호 1개라 **누가 입력/수정했는지는 구분할 수 없다** — 외부인
-  접근 차단만 된다. 작업자별 구분이 필요해지면 계정 기반 로그인으로 다시 바꿔야 한다.
-- 비밀번호를 바꾸려면 Vercel/`.env.local`의 `APP_PASSWORD` 값을 바꾸고 재배포하면 된다
-  (바뀌는 순간 기존에 로그인해 있던 모든 사람도 다시 로그인해야 함).
+- 계정 추가/삭제/비밀번호 변경은 `ACCOUNTS_JSON` 값을 고쳐서 재배포하는 방식이다 —
+  가입 화면이나 관리자 UI는 없다. 비밀번호를 하나라도 바꾸면 그 비밀번호로 로그인해
+  있던 사람은 다시 로그인해야 한다.
+- 비밀번호 하나로 계정을 구분하기 때문에, **두 사람이 같은 비밀번호를 쓰면 같은
+  계정으로 기록된다** — 구분이 필요한 사람 수만큼 `ACCOUNTS_JSON`에 항목을 늘려야 한다.
 - Playwright e2e 테스트는 아직 작성하지 않았다 (Vitest 단위 테스트만 있음) — 실제
   배포 후 §5 체크리스트를 수동으로 1회 돌려본다.
 - 바코드 검수의 오더번호는 OrderLine과 강제로 연결되지 않는 자유 입력 텍스트다 —
