@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { prisma } from "@/lib/prisma";
+import { formatDateTimeKST } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,9 @@ export async function GET(request: NextRequest) {
   });
 
   const rows = [
-    ["시간", "오더번호", "상품코드", "상품명", "컬러", "사이즈", "스캔된바코드", "기대바코드", "결과"],
+    ["시간(KST)", "오더번호", "상품코드", "상품명", "컬러", "사이즈", "스캔된바코드", "기대바코드", "결과"],
     ...logs.map((log) => [
-      log.scannedAt.toISOString().slice(0, 19).replace("T", " "),
+      formatDateTimeKST(log.scannedAt),
       log.orderNo,
       log.productCode,
       log.productName,

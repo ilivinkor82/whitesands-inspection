@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { kstDayRange } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -13,15 +14,8 @@ const ScanSchema = z.object({
   scannedBarcode: z.string().min(1),
 });
 
-function todayRange() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-  return { start, end };
-}
-
 async function todayCounts(orderNo: string) {
-  const { start, end } = todayRange();
+  const { start, end } = kstDayRange();
   const [matchCount, mismatchCount] = await Promise.all([
     prisma.scanLog.count({ where: { orderNo, result: "MATCH", scannedAt: { gte: start, lt: end } } }),
     prisma.scanLog.count({ where: { orderNo, result: "MISMATCH", scannedAt: { gte: start, lt: end } } }),
