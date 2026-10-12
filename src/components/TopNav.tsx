@@ -6,12 +6,19 @@ import { useEffect, useState } from "react";
 export function TopNav() {
   const router = useRouter();
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/session")
       .then((res) => res.json())
-      .then((data) => setDisplayName(data.account?.displayName ?? null))
-      .catch(() => setDisplayName(null));
+      .then((data) => {
+        setDisplayName(data.account?.displayName ?? null);
+        setRole(data.account?.role ?? null);
+      })
+      .catch(() => {
+        setDisplayName(null);
+        setRole(null);
+      });
   }, []);
 
   async function handleLogout() {
@@ -20,12 +27,14 @@ export function TopNav() {
     router.refresh();
   }
 
+  const isAdmin = role === "admin";
+
   return (
     <nav className="topnav">
       <strong>화이트샌즈 검수 관리</strong>
       <a href="/orders">현황</a>
-      <a href="/import">엑셀 업로드</a>
-      <a href="/import/history">업로드 이력</a>
+      {isAdmin && <a href="/import">엑셀 업로드</a>}
+      {isAdmin && <a href="/import/history">업로드 이력</a>}
       <a href="/barcode">바코드 검수</a>
       <span className="spacer" />
       {displayName && <span>{displayName}님</span>}
