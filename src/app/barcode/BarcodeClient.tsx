@@ -235,86 +235,90 @@ export function BarcodeClient() {
         </div>
       )}
 
-      {step === "product" && (
-        <div className="card">
-          <button
-            className="btn secondary"
-            style={{ marginBottom: 12 }}
-            onClick={() => {
-              setStep("order");
-              setSelectedProductCode("");
-            }}
-          >
-            ← 오더번호 변경
-          </button>
-          <h3>2단계) 검수할 상품 선택 (오더: {orderNo})</h3>
-
-          <div style={{ marginBottom: 12 }}>
-            <label>
-              상품
-              <br />
-              <select
-                value={selectedProductCode}
-                onChange={(e) => setSelectedProductCode(e.target.value)}
-                style={{ width: 420, padding: "6px 8px" }}
+      {step === "product" &&
+        (() => {
+          const variant = selectedVariantId ? colorVariants.find((v) => v.id === selectedVariantId) : null;
+          return (
+            <div className="card">
+              <button
+                className="btn secondary"
+                style={{ marginBottom: 12 }}
+                onClick={() => {
+                  setStep("order");
+                  setSelectedProductCode("");
+                }}
               >
-                <option value="">-- 상품 선택 --</option>
-                {productCatalog.map((p) => (
-                  <option key={p.productCode} value={p.productCode}>
-                    {p.productCode} · {p.productName}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+                ← 오더번호 변경
+              </button>
+              <h3>2단계) 검수할 상품 선택 (오더: {orderNo})</h3>
 
-          {selectedProductCode && (
-            <div style={{ marginBottom: 12 }}>
-              <label>
-                컬러 / 사이즈
-                <br />
-                <select
-                  value={selectedVariantId}
-                  onChange={(e) => setSelectedVariantId(e.target.value)}
-                  style={{ width: 280, padding: "6px 8px" }}
-                >
-                  <option value="">-- 컬러 선택 --</option>
-                  {colorVariants.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.colorName}
-                      {v.sizeName !== "ONE SIZE" ? ` (${v.sizeName})` : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          )}
+              <div style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
+                <div style={{ flex: "1 1 auto", minWidth: 280 }}>
+                  <div style={{ marginBottom: 12 }}>
+                    <label>
+                      상품
+                      <br />
+                      <select
+                        value={selectedProductCode}
+                        onChange={(e) => setSelectedProductCode(e.target.value)}
+                        style={{ width: 420, padding: "6px 8px" }}
+                      >
+                        <option value="">-- 상품 선택 --</option>
+                        {productCatalog.map((p) => (
+                          <option key={p.productCode} value={p.productCode}>
+                            {p.productCode} · {p.productName}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
 
-          {selectedVariantId &&
-            (() => {
-              const variant = colorVariants.find((v) => v.id === selectedVariantId);
-              if (!variant) return null;
-              return (
-                <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
-                  {variant.imageUrl && (
-                    <img
-                      src={variant.imageUrl}
-                      alt={variant.productName}
-                      className="product-thumb"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.visibility = "hidden";
-                      }}
-                    />
+                  {selectedProductCode && (
+                    <div style={{ marginBottom: 12 }}>
+                      <label>
+                        컬러 / 사이즈
+                        <br />
+                        <select
+                          value={selectedVariantId}
+                          onChange={(e) => setSelectedVariantId(e.target.value)}
+                          style={{ width: 280, padding: "6px 8px" }}
+                        >
+                          <option value="">-- 컬러 선택 --</option>
+                          {colorVariants.map((v) => (
+                            <option key={v.id} value={v.id}>
+                              {v.colorName}
+                              {v.sizeName !== "ONE SIZE" ? ` (${v.sizeName})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
                   )}
-                  <span className="color-badge">{variant.colorName}</span>
-                  <button className="btn" onClick={() => pickProduct(variant)}>
-                    이 상품으로 검수 시작
-                  </button>
+
+                  {variant && (
+                    <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
+                      <span className="color-badge">{variant.colorName}</span>
+                      <button className="btn" onClick={() => pickProduct(variant)}>
+                        이 상품으로 검수 시작
+                      </button>
+                    </div>
+                  )}
                 </div>
-              );
-            })()}
-        </div>
-      )}
+
+                {variant?.imageUrl && (
+                  <img
+                    src={variant.imageUrl}
+                    alt={variant.productName}
+                    className="product-thumb-large"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.visibility = "hidden";
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
       {step === "scan" && selectedProduct && (
         <div className="card">

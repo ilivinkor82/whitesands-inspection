@@ -250,3 +250,14 @@ input[type="text"] {
   background: white;
   display: block;
 }
+
+.product-thumb-large {
+  flex: 0 0 auto;
+  width: 360px;
+  height: 360px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  display: block;
+}
