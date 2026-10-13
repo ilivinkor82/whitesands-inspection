@@ -57,11 +57,16 @@ export function BarcodeClient() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/barcode/products/catalog")
+    setSelectedProductCode("");
+    if (!orderNo) {
+      setProductCatalog([]);
+      return;
+    }
+    fetch(`/api/barcode/products/catalog?orderNo=${encodeURIComponent(orderNo)}`)
       .then((r) => r.json())
       .then((d) => setProductCatalog(d.products ?? []))
-      .catch(() => {});
-  }, []);
+      .catch(() => setProductCatalog([]));
+  }, [orderNo]);
 
   useEffect(() => {
     setSelectedVariantId("");
@@ -267,7 +272,7 @@ export function BarcodeClient() {
                       <select
                         value={selectedProductCode}
                         onChange={(e) => setSelectedProductCode(e.target.value)}
-                        style={{ width: 420, padding: "6px 8px" }}
+                        style={{ width: "100%", padding: "6px 8px" }}
                       >
                         <option value="">-- 상품 선택 --</option>
                         {productCatalog.map((p) => (
