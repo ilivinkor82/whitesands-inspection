@@ -31,6 +31,7 @@ export function OrdersTable() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const load = useCallback(async (query: string) => {
     setLoading(true);
@@ -46,6 +47,31 @@ export function OrdersTable() {
   useEffect(() => {
     load("");
   }, [load]);
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((d) => setIsAdmin(d.account?.role === "admin"))
+      .catch(() => setIsAdmin(false));
+  }, []);
+
+  async function deleteRow(row: OrderRow) {
+    if (!confirm(`삭제하시겠습니까?\n${row.orderNo} / ${row.productCode} / ${row.colorName}\n되돌릴 수 없습니다.`)) {
+      return;
+    }
+    setSavingId(row.id);
+    try {
+      const res = await fetch(`/api/orders/${row.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (res.ok) {
+        setRows((prev) => prev.filter((r) => r.id !== row.id));
+      } else {
+        alert(data.error ?? "삭제에 실패했습니다");
+      }
+    } finally {
+      setSavingId(null);
+    }
+  }
 
   async function patchRow(id: string, patch: Record<string, unknown>) {
     setSavingId(id);
@@ -91,7 +117,7 @@ export function OrdersTable() {
               <col style={{ width: "7%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "7%" }} />
-              <col style={{ width: "19%" }} />
+              <col style={{ width: "17%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "5%" }} />
               <col style={{ width: "7%" }} />
@@ -102,7 +128,8 @@ export function OrdersTable() {
               <col style={{ width: "7%" }} />
               <col style={{ width: "5%" }} />
               <col style={{ width: "4%" }} />
-              <col style={{ width: "7%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "4%" }} />
             </colgroup>
             <thead>
               <tr>
@@ -129,6 +156,7 @@ export function OrdersTable() {
                 <th>복귀수량</th>
                 <th>차이</th>
                 <th>비고</th>
+                <th>{isAdmin ? "삭제" : ""}</th>
               </tr>
             </thead>
             <tbody>
@@ -191,11 +219,18 @@ export function OrdersTable() {
                       onBlur={(e) => patchRow(row.id, { notes: e.target.value || null })}
                     />
                   </td>
+                  <td>
+                    {isAdmin && (
+                      <button className="btn secondary" style={{ padding: "2px 8px", fontSize: 11 }} onClick={() => deleteRow(row)}>
+                        삭제
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={15}>데이터가 없습니다. 엑셀 업로드로 추가하세요.</td>
+                  <td colSpan={16}>데이터가 없습니다. 엑셀 업로드로 추가하세요.</td>
                 </tr>
               )}
             </tbody>

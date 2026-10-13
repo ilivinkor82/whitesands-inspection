@@ -39,3 +39,22 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   return NextResponse.json({ row: computeDerived(updated) });
 }
+
+// 행 삭제는 마스터(admin) 계정만 — 실수로 지우기 쉬운 파괴적 작업이라 역할 체크를
+// 미들웨어가 아니라 여기서 직접 한다 (PATCH/GET은 작업자도 계속 써야 하므로
+// 경로 전체를 admin 전용으로 막을 수 없다).
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const account = await getCurrentAccount();
+  if (account?.role !== "admin") {
+    return NextResponse.json({ error: "이 기능은 관리자 계정만 쓸 수 있습니다" }, { status: 403 });
+  }
+
+  const existing = await prisma.orderLine.findUnique({ where: { id } });
+  if (!existing) {
+    return NextResponse.json({ error: "행을 찾을 수 없습니다" }, { status: 404 });
+  }
+
+  await prisma.orderLine.delete({ where: { id } });
+  return NextResponse.json({ ok: true });
+}
