@@ -115,22 +115,22 @@ export function OrdersTable() {
         <div style={{ overflowX: "auto" }}>
           <table className="orders-table">
             <colgroup>
-              <col style={{ width: "7%" }} />
               <col style={{ width: "6%" }} />
+              <col style={{ width: "5%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "9%" }} />
-              <col style={{ width: "6%" }} />
               <col style={{ width: "5%" }} />
-              <col style={{ width: "7%" }} />
-              <col style={{ width: "6%" }} />
-              <col style={{ width: "5%" }} />
+              <col style={{ width: "4%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "5%" }} />
-              <col style={{ width: "7%" }} />
+              <col style={{ width: "6%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "4%" }} />
-              <col style={{ width: "5%" }} />
+              <col style={{ width: "6%" }} />
+              <col style={{ width: "6%" }} />
+              <col style={{ width: "4%" }} />
+              <col style={{ width: "12%" }} />
               <col style={{ width: "4%" }} />
             </colgroup>
             <thead>
@@ -157,7 +157,7 @@ export function OrdersTable() {
                   <br />
                   검수수량
                 </th>
-                <th>불량수량</th>
+                <th>바코드불량수량</th>
                 <th>양품수량</th>
                 <th>
                   복귀일자
@@ -235,9 +235,10 @@ export function OrdersTable() {
                   </td>
                   <td className="text-right">{row.diffQty ?? ""}</td>
                   <td className="text-left">
-                    <input
-                      type="text"
+                    <textarea
                       defaultValue={row.notes ?? ""}
+                      maxLength={1000}
+                      rows={2}
                       onBlur={(e) => patchRow(row.id, { notes: e.target.value || null })}
                     />
                   </td>

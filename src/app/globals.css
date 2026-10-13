@@ -124,10 +124,13 @@ input[type="text"] {
   text-align: center;
 }
 
-.orders-table input[type="text"] {
-  width: 110px;
+.orders-table textarea {
+  width: 100%;
+  min-width: 180px;
   font-size: 12px;
   padding: 2px 4px;
+  font-family: inherit;
+  resize: vertical;
 }
 
 .card {

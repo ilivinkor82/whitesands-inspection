@@ -390,7 +390,7 @@ export function BarcodeClient() {
                 {lastResult.result === "MISMATCH" && ` / 기대: ${lastResult.expected ?? "(등록된 바코드 없음)"}`}
               </div>
               <div style={{ fontSize: 13, marginTop: 4, fontWeight: "normal", opacity: 0.9 }}>
-                {lastResult.orderLineStatus === "UPDATED" && "✓ 현황(검수수량/불량수량)에 반영됨"}
+                {lastResult.orderLineStatus === "UPDATED" && "✓ 현황(바코드검수수량/바코드불량수량)에 반영됨"}
                 {lastResult.orderLineStatus === "NOT_FOUND" &&
                   "⚠ 현황에서 이 오더번호+상품+컬러를 찾지 못해 반영되지 않음"}
                 {lastResult.orderLineStatus === "AMBIGUOUS" &&

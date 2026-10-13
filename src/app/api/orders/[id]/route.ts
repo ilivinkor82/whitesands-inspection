@@ -16,7 +16,7 @@ const PatchSchema = z.object({
     .optional()
     .transform((v) => (v ? new Date(v) : null)),
   returnQty: z.number().int().nullable().optional(),
-  notes: z.string().nullable().optional(),
+  notes: z.string().max(1000, "비고는 1000자까지 입력할 수 있습니다").nullable().optional(),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
