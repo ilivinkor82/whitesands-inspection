@@ -111,7 +111,7 @@ input[type="text"] {
 }
 
 .orders-table input[type="number"] {
-  width: 44px;
+  width: 64px;
   font-size: 12px;
   padding: 2px 4px;
   text-align: right;
