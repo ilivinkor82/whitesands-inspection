@@ -141,7 +141,13 @@ export function BarcodeClient() {
           expected: data.expectedBarcode,
           orderLineStatus: data.orderLineStatus,
         });
-        setCounts({ matchCount: data.matchCount, mismatchCount: data.mismatchCount });
+        // 서버는 더 이상 스캔마다 카운트를 다시 세지 않는다 — 이 응답의 결과로 바로
+        // 누적한다(최초 진입 시 정확한 집계는 /api/barcode/scan/summary로 따로 불러옴).
+        setCounts((prev) =>
+          data.result === "MATCH"
+            ? { ...prev, matchCount: prev.matchCount + 1 }
+            : { ...prev, mismatchCount: prev.mismatchCount + 1 }
+        );
       }
     } finally {
       setScanValue("");

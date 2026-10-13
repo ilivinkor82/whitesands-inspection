@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { kstDayRange } from "@/lib/datetime";
 import { getCurrentAccount } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -15,15 +14,6 @@ const ScanSchema = z.object({
   scannedBarcode: z.string().min(1),
 });
 
-async function todayCounts(orderNo: string) {
-  const { start, end } = kstDayRange();
-  const [matchCount, mismatchCount] = await Promise.all([
-    prisma.scanLog.count({ where: { orderNo, result: "MATCH", scannedAt: { gte: start, lt: end } } }),
-    prisma.scanLog.count({ where: { orderNo, result: "MISMATCH", scannedAt: { gte: start, lt: end } } }),
-  ]);
-  return { matchCount, mismatchCount };
-}
-
 type OrderLineUpdateStatus = "UPDATED" | "NOT_FOUND" | "AMBIGUOUS";
 
 /**
@@ -33,9 +23,11 @@ type OrderLineUpdateStatus = "UPDATED" | "NOT_FOUND" | "AMBIGUOUS";
  * colorName으로 (오더번호+상품코드+컬러명) 매칭한다. 일치하는 행이 정확히 하나일 때만
  * 반영하고, 0건/2건 이상이면 애매하니 건드리지 않고 상태만 알려준다.
  *
- * find-then-write(읽고 +1해서 쓰기)는 짧은 간격으로 스캔이 몰리면 두 요청이 같은
- * 값을 읽고 둘 다 +1만 반영되는 lost-update가 실제로 발생했다 — DB가 직접
- * COALESCE(col,0)+1을 계산하는 원자적 UPDATE로 바꿔서 경쟁 조건 자체를 없앤다.
+ * 조회(후보 찾기)와 반영(UPDATE)을 CTE 하나로 묶어서 왕복 1번으로 끝낸다 — 예전엔
+ * find-then-write 두 번의 왕복이었는데, 그 사이 간격에서 짧게 몰리는 스캔끼리
+ * lost-update가 실제로 발생한 적이 있다. candidates가 정확히 1건일 때만 WHERE 조건이
+ * 참이 되게 해서, 0건/2건 이상이면 UPDATE 자체가 조용히 아무 것도 안 건드리고
+ * candidateCount로 상태를 구분한다 — 그래서 여전히 원자적이다.
  */
 async function reflectToOrderLine(
   orderNo: string,
@@ -44,33 +36,29 @@ async function reflectToOrderLine(
   isMatch: boolean,
   accountId: string | null
 ): Promise<OrderLineUpdateStatus> {
-  const candidates = await prisma.orderLine.findMany({
-    where: { orderNo, productCode, colorName },
-    select: { id: true },
-  });
-
-  if (candidates.length === 0) return "NOT_FOUND";
-  if (candidates.length > 1) return "AMBIGUOUS";
-
-  const targetId = candidates[0].id;
-  if (isMatch) {
-    await prisma.$executeRaw`
-      UPDATE "OrderLine"
-      SET "inspectedQty" = COALESCE("inspectedQty", 0) + 1,
+  const rows = await prisma.$queryRaw<{ candidateCount: bigint; updatedCount: bigint }[]>`
+    WITH candidates AS (
+      SELECT id FROM "OrderLine"
+      WHERE "orderNo" = ${orderNo} AND "productCode" = ${productCode} AND "colorName" = ${colorName}
+    ),
+    updated AS (
+      UPDATE "OrderLine" o
+      SET "inspectedQty" = COALESCE(o."inspectedQty", 0) + 1,
+          "defectQty" = CASE WHEN ${isMatch} THEN o."defectQty" ELSE COALESCE(o."defectQty", 0) + 1 END,
           "updatedBy" = ${accountId},
           "updatedAt" = now()
-      WHERE id = ${targetId}
-    `;
-  } else {
-    await prisma.$executeRaw`
-      UPDATE "OrderLine"
-      SET "inspectedQty" = COALESCE("inspectedQty", 0) + 1,
-          "defectQty" = COALESCE("defectQty", 0) + 1,
-          "updatedBy" = ${accountId},
-          "updatedAt" = now()
-      WHERE id = ${targetId}
-    `;
-  }
+      WHERE o.id IN (SELECT id FROM candidates)
+        AND (SELECT count(*) FROM candidates) = 1
+      RETURNING o.id
+    )
+    SELECT
+      (SELECT count(*) FROM candidates) AS "candidateCount",
+      (SELECT count(*) FROM updated) AS "updatedCount"
+  `;
+
+  const candidateCount = Number(rows[0]?.candidateCount ?? 0);
+  if (candidateCount === 0) return "NOT_FOUND";
+  if (candidateCount > 1) return "AMBIGUOUS";
   return "UPDATED";
 }
 
@@ -93,12 +81,16 @@ export async function POST(request: NextRequest) {
   const matches = product != null && (scannedBarcode === product.barcode1 || (!!product.barcode2 && scannedBarcode === product.barcode2));
   const result = matches ? "MATCH" : "MISMATCH";
 
-  await prisma.scanLog.create({
-    data: { orderNo, productCode, productName, colorName, sizeName, scannedBarcode, expectedBarcode, result, scannedBy: accountId },
-  });
+  // 스캔 기록 저장과 현황(OrderLine) 반영은 서로 다른 테이블에 쓰는 독립적인 작업이라
+  // 순서대로 기다릴 필요가 없다 — 동시에 보내서 왕복을 줄인다. "오늘 검수" 카운트는
+  // 이 응답이 이미 들고 있는 match/mismatch 결과로 클라이언트가 바로 누적하므로
+  // 여기서 매번 다시 세지 않는다 (최초 진입 시 집계는 /api/barcode/scan/summary).
+  const [, orderLineStatus] = await Promise.all([
+    prisma.scanLog.create({
+      data: { orderNo, productCode, productName, colorName, sizeName, scannedBarcode, expectedBarcode, result, scannedBy: accountId },
+    }),
+    reflectToOrderLine(orderNo, productCode, colorName, matches, accountId),
+  ]);
 
-  const orderLineStatus = await reflectToOrderLine(orderNo, productCode, colorName, matches, accountId);
-  const counts = await todayCounts(orderNo);
-
-  return NextResponse.json({ result, expectedBarcode, orderLineStatus, ...counts });
+  return NextResponse.json({ result, expectedBarcode, orderLineStatus });
 }
