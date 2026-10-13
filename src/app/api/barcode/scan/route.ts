@@ -17,7 +17,11 @@ const ScanSchema = z.object({
 type OrderLineUpdateStatus = "UPDATED" | "NOT_FOUND" | "AMBIGUOUS";
 
 /**
- * 스캔 1건 = 현물 1개 검수 — 해당 오더의 OrderLine(검수수량/불량수량)에 1씩 반영한다.
+ * 스캔 1건 = 현물 1개 검수 — 해당 오더의 OrderLine에 반영한다. "검수수량"은 바코드검수수량
+ * (scannedQty)과 제품검수수량(inspectedQty) 두 칸으로 나뉘어 있는데, 스캔은 바코드검수수량만
+ * 건드린다 — 제품검수수량은 관리자가 현물/엑셀 기준으로 직접 세는 별도 숫자라 스캔이
+ * 건드리면 두 숫자를 대조할 수 없게 된다. 불량수량은 (아직은) 한 칸을 공유한다.
+ *
  * 바코드 레지스트리는 컬러를 "컬러명"(예: 애쉬퍼플)으로만 들고 있고, OrderLine은
  * 컬러코드(SKU)가 식별키라서 둘을 바로 조인할 수 없다 — 대신 OrderLine에도 같이 있는
  * colorName으로 (오더번호+상품코드+컬러명) 매칭한다. 일치하는 행이 정확히 하나일 때만
@@ -43,7 +47,7 @@ async function reflectToOrderLine(
     ),
     updated AS (
       UPDATE "OrderLine" o
-      SET "inspectedQty" = COALESCE(o."inspectedQty", 0) + 1,
+      SET "scannedQty" = COALESCE(o."scannedQty", 0) + 1,
           "defectQty" = CASE WHEN ${isMatch} THEN o."defectQty" ELSE COALESCE(o."defectQty", 0) + 1 END,
           "updatedBy" = ${accountId},
           "updatedAt" = now()

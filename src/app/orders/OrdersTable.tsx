@@ -12,6 +12,7 @@ interface OrderRow {
   requestedQty: number | null;
   shipDate: string | null;
   shippedQty: number | null;
+  scannedQty: number | null;
   inspectedQty: number | null;
   defectQty: number | null;
   goodQty: number | null;
@@ -116,11 +117,12 @@ export function OrdersTable() {
             <colgroup>
               <col style={{ width: "7%" }} />
               <col style={{ width: "6%" }} />
-              <col style={{ width: "7%" }} />
-              <col style={{ width: "17%" }} />
+              <col style={{ width: "6%" }} />
+              <col style={{ width: "13%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "5%" }} />
               <col style={{ width: "7%" }} />
+              <col style={{ width: "5%" }} />
               <col style={{ width: "5%" }} />
               <col style={{ width: "5%" }} />
               <col style={{ width: "5%" }} />
@@ -145,7 +147,16 @@ export function OrdersTable() {
                   (주희→제이에스)
                 </th>
                 <th>이동수량</th>
-                <th>검수수량</th>
+                <th>
+                  바코드
+                  <br />
+                  검수수량
+                </th>
+                <th>
+                  제품
+                  <br />
+                  검수수량
+                </th>
                 <th>불량수량</th>
                 <th>양품수량</th>
                 <th>
@@ -170,6 +181,7 @@ export function OrdersTable() {
                   <td className="text-right">{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>
                   <td className="text-right">{row.shippedQty ?? ""}</td>
+                  <td className="text-right">{row.scannedQty ?? ""}</td>
                   <td className="text-right">
                     {isAdmin ? (
                       <input
@@ -238,7 +250,7 @@ export function OrdersTable() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={16}>데이터가 없습니다. 엑셀 업로드로 추가하세요.</td>
+                  <td colSpan={17}>데이터가 없습니다. 엑셀 업로드로 추가하세요.</td>
                 </tr>
               )}
             </tbody>

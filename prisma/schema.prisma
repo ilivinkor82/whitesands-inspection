@@ -20,9 +20,13 @@ model OrderLine {
   shipDate     DateTime? // 이동일자 (주희물류→제이에스)
   shippedQty   Int? // 이동수량
 
-  inspectedQty Int? // 검수수량
-  defectQty    Int? // 불량수량
-  // 양품수량 = 검수수량 - 불량수량 은 저장하지 않고 항상 계산한다 (src/lib/compute.ts)
+  inspectedQty Int? // 제품검수수량 — 관리자가 직접 세어서 입력하는 수치(양품수량 계산 기준)
+  scannedQty   Int? // 바코드검수수량 — 바코드 스캔 1건(일치+불일치 전체)마다 자동 집계, 수동 입력 불가.
+  // 둘 다 "검수수량"이지만 서로 다른 방식으로 센 숫자라 한 칸에 합치면 어긋난다 —
+  // 바코드검수수량은 스캔 건수, 제품검수수량은 관리자가 현물/엑셀 기준으로 세는 숫자.
+  // 서로 대조해서 확인하라고 별도 칸으로 둔다.
+  defectQty    Int? // 불량수량 — 바코드 불일치 스캔 또는 관리자 직접 입력
+  // 양품수량 = 제품검수수량 - 불량수량 은 저장하지 않고 항상 계산한다 (src/lib/compute.ts)
 
   returnDate DateTime? // 복귀일자 (제이에스→주희물류)
   returnQty  Int? // 복귀수량
