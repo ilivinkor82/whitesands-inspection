@@ -5,8 +5,9 @@ import { computeDerived } from "@/lib/compute";
 import { getCurrentAccount } from "@/lib/session";
 
 // 작업자 화면에서 인라인으로 고칠 수 있는 필드만 허용한다.
-// 출고 관련 필드(출고요청수량/이동일자/이동수량)는 엑셀 임포트로만 들어온다.
+// 출고요청수량/이동일자는 여전히 엑셀 임포트로만 들어온다 — 이동수량만 인라인 수정도 허용한다.
 const PatchSchema = z.object({
+  shippedQty: z.number().int().nullable().optional(),
   inspectedQty: z.number().int().nullable().optional(),
   defectQty: z.number().int().nullable().optional(),
   returnDate: z

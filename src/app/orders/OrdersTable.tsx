@@ -180,7 +180,17 @@ export function OrdersTable() {
                   <td className="text-left">{row.colorName}</td>
                   <td className="text-right">{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>
-                  <td className="text-right">{row.shippedQty ?? ""}</td>
+                  <td className="text-right">
+                    <input
+                      type="number"
+                      defaultValue={row.shippedQty ?? ""}
+                      onBlur={(e) =>
+                        patchRow(row.id, {
+                          shippedQty: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </td>
                   <td className="text-right">{row.scannedQty ?? ""}</td>
                   <td className="text-right">
                     <input
