@@ -226,8 +226,8 @@ export function BarcodeClient() {
           <table style={{ marginTop: 12 }}>
             <thead>
               <tr>
-                <th>상품코드</th>
-                <th>상품명</th>
+                <th>이미지</th>
+                <th>상품코드 / 상품명</th>
                 <th>컬러</th>
                 <th>사이즈</th>
               </tr>
@@ -235,9 +235,26 @@ export function BarcodeClient() {
             <tbody>
               {productResults.map((p) => (
                 <tr key={p.id} className="product-pick-row" onClick={() => pickProduct(p)}>
-                  <td>{p.productCode}</td>
-                  <td style={{ textAlign: "left", whiteSpace: "normal" }}>{p.productName}</td>
-                  <td>{p.colorName}</td>
+                  <td>
+                    {p.imageUrl ? (
+                      <img
+                        src={p.imageUrl}
+                        alt={p.productName}
+                        className="product-thumb"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.visibility = "hidden";
+                        }}
+                      />
+                    ) : (
+                      ""
+                    )}
+                  </td>
+                  <td className="muted" style={{ textAlign: "left", whiteSpace: "normal" }}>
+                    {p.productCode} · {p.productName}
+                  </td>
+                  <td className="color-cell">
+                    <span className="color-badge">{p.colorName}</span>
+                  </td>
                   <td>{p.sizeName}</td>
                 </tr>
               ))}

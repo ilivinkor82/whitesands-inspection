@@ -222,3 +222,31 @@ input[type="text"] {
 .product-pick-row:hover {
   background: #eef1f6;
 }
+
+.product-pick-row td.muted {
+  color: #8a8f98;
+  font-size: 12px;
+}
+
+.product-pick-row td.color-cell {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.color-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: #eef1f6;
+  border: 1px solid #d4d9e2;
+}
+
+.product-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  display: block;
+}
