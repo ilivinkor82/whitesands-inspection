@@ -175,6 +175,7 @@ export function BarcodeClient() {
       if (res.ok) {
         setImportMessage(
           `추가 ${data.insertedCount}건 · 갱신 ${data.updatedCount}건` +
+            (data.skippedCount ? ` · 건너뜀 ${data.skippedCount}건` : "") +
             (data.errorRows?.length ? ` · 오류 ${data.errorRows.length}건` : "")
         );
       } else {
@@ -338,7 +339,7 @@ export function BarcodeClient() {
               <img
                 src={selectedProduct.imageUrl}
                 alt={selectedProduct.productName}
-                style={{ width: 120, height: 120, objectFit: "contain", border: "1px solid #ddd", borderRadius: 6, background: "white" }}
+                style={{ width: 200, height: 200, objectFit: "contain", border: "1px solid #ddd", borderRadius: 6, background: "white" }}
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
