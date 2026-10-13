@@ -170,27 +170,35 @@ export function OrdersTable() {
                   <td className="text-right">{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>
                   <td className="text-right">{row.shippedQty ?? ""}</td>
-                  <td>
-                    <input
-                      type="number"
-                      defaultValue={row.inspectedQty ?? ""}
-                      onBlur={(e) =>
-                        patchRow(row.id, {
-                          inspectedQty: e.target.value === "" ? null : Number(e.target.value),
-                        })
-                      }
-                    />
+                  <td className="text-right">
+                    {isAdmin ? (
+                      <input
+                        type="number"
+                        defaultValue={row.inspectedQty ?? ""}
+                        onBlur={(e) =>
+                          patchRow(row.id, {
+                            inspectedQty: e.target.value === "" ? null : Number(e.target.value),
+                          })
+                        }
+                      />
+                    ) : (
+                      row.inspectedQty ?? ""
+                    )}
                   </td>
-                  <td>
-                    <input
-                      type="number"
-                      defaultValue={row.defectQty ?? ""}
-                      onBlur={(e) =>
-                        patchRow(row.id, {
-                          defectQty: e.target.value === "" ? null : Number(e.target.value),
-                        })
-                      }
-                    />
+                  <td className="text-right">
+                    {isAdmin ? (
+                      <input
+                        type="number"
+                        defaultValue={row.defectQty ?? ""}
+                        onBlur={(e) =>
+                          patchRow(row.id, {
+                            defectQty: e.target.value === "" ? null : Number(e.target.value),
+                          })
+                        }
+                      />
+                    ) : (
+                      row.defectQty ?? ""
+                    )}
                   </td>
                   <td className="text-right">{row.goodQty ?? ""}</td>
                   <td>

@@ -32,6 +32,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 
   const account = await getCurrentAccount();
+
+  // 검수수량/불량수량은 이제 바코드 스캔으로만 쌓는다 — 작업자가 이 칸을 직접
+  // 고치면 스캔 집계와 어긋나기 쉬워서, worker 계정은 서버에서도 막는다
+  // (화면에서 입력칸을 숨기는 것과 별개로 API 직접 호출도 차단).
+  if (account?.role !== "admin" && (parsed.data.inspectedQty !== undefined || parsed.data.defectQty !== undefined)) {
+    return NextResponse.json({ error: "검수수량/불량수량은 관리자 계정만 수정할 수 있습니다" }, { status: 403 });
+  }
+
   const updated = await prisma.orderLine.update({
     where: { id },
     data: { ...parsed.data, updatedBy: account?.accountId ?? null },
