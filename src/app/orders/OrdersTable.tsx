@@ -183,19 +183,15 @@ export function OrdersTable() {
                   <td className="text-right">{row.shippedQty ?? ""}</td>
                   <td className="text-right">{row.scannedQty ?? ""}</td>
                   <td className="text-right">
-                    {isAdmin ? (
-                      <input
-                        type="number"
-                        defaultValue={row.inspectedQty ?? ""}
-                        onBlur={(e) =>
-                          patchRow(row.id, {
-                            inspectedQty: e.target.value === "" ? null : Number(e.target.value),
-                          })
-                        }
-                      />
-                    ) : (
-                      row.inspectedQty ?? ""
-                    )}
+                    <input
+                      type="number"
+                      defaultValue={row.inspectedQty ?? ""}
+                      onBlur={(e) =>
+                        patchRow(row.id, {
+                          inspectedQty: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                      }
+                    />
                   </td>
                   <td className="text-right">
                     {isAdmin ? (
