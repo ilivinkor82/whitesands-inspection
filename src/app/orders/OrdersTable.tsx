@@ -9,7 +9,6 @@ interface OrderRow {
   colorCode: string;
   productName: string;
   colorName: string;
-  requestedQty: number | null;
   shipDate: string | null;
   shippedQty: number | null;
   scannedQty: number | null;
@@ -118,19 +117,18 @@ export function OrdersTable() {
               <col style={{ width: "6%" }} />
               <col style={{ width: "5%" }} />
               <col style={{ width: "6%" }} />
-              <col style={{ width: "9%" }} />
-              <col style={{ width: "5%" }} />
-              <col style={{ width: "4%" }} />
-              <col style={{ width: "6%" }} />
-              <col style={{ width: "6%" }} />
+              <col style={{ width: "11%" }} />
               <col style={{ width: "5%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "6%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "6%" }} />
+              <col style={{ width: "6%" }} />
               <col style={{ width: "4%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "6%" }} />
               <col style={{ width: "4%" }} />
-              <col style={{ width: "12%" }} />
+              <col style={{ width: "14%" }} />
               <col style={{ width: "4%" }} />
             </colgroup>
             <thead>
@@ -140,7 +138,6 @@ export function OrdersTable() {
                 <th>컬러코드</th>
                 <th>상품명</th>
                 <th>컬러</th>
-                <th>출고요청수량</th>
                 <th>
                   이동일자
                   <br />
@@ -178,7 +175,6 @@ export function OrdersTable() {
                   <td className="text-left">{row.colorCode}</td>
                   <td className="text-left product-name">{row.productName}</td>
                   <td className="text-left">{row.colorName}</td>
-                  <td className="text-right">{row.requestedQty ?? ""}</td>
                   <td>{toDateInputValue(row.shipDate)}</td>
                   <td className="text-right">
                     <input
@@ -253,7 +249,7 @@ export function OrdersTable() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={17}>데이터가 없습니다. 엑셀 업로드로 추가하세요.</td>
+                  <td colSpan={16}>데이터가 없습니다. 엑셀 업로드로 추가하세요.</td>
                 </tr>
               )}
             </tbody>
