@@ -20,8 +20,10 @@ export function BarcodeClient() {
   const [orderNo, setOrderNo] = useState("");
   const [orderSuggestions, setOrderSuggestions] = useState<string[]>([]);
 
-  const [productQuery, setProductQuery] = useState("");
-  const [productResults, setProductResults] = useState<BarcodeProductRow[]>([]);
+  const [productCatalog, setProductCatalog] = useState<{ productCode: string; productName: string }[]>([]);
+  const [selectedProductCode, setSelectedProductCode] = useState("");
+  const [colorVariants, setColorVariants] = useState<BarcodeProductRow[]>([]);
+  const [selectedVariantId, setSelectedVariantId] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<BarcodeProductRow | null>(null);
 
   const [scanValue, setScanValue] = useState("");
@@ -39,6 +41,13 @@ export function BarcodeClient() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const scanInputRef = useRef<HTMLInputElement>(null);
+  // React state(scanning)만으로는 막을 수 없는 중복 제출이 있었다: 스캐너가 보내는
+  // Enter와 "0.4초 멈추면 자동판정" 보조 타이머가 같은 스캔에 대해 둘 다 발동하면,
+  // 보조 타이머 콜백은 Enter가 눌린 시점 이전에 만들어진 클로저라 scanning state가
+  // 아직 false였던 걸 그대로 들고 있어서 가드를 못 뚫었다 — ref는 항상 최신값을
+  // 읽으므로 이 문제가 없다.
+  const scanningRef = useRef(false);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetch("/api/barcode/orders")
@@ -46,6 +55,25 @@ export function BarcodeClient() {
       .then((d) => setOrderSuggestions(d.orderNumbers ?? []))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetch("/api/barcode/products/catalog")
+      .then((r) => r.json())
+      .then((d) => setProductCatalog(d.products ?? []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    setSelectedVariantId("");
+    if (!selectedProductCode) {
+      setColorVariants([]);
+      return;
+    }
+    fetch(`/api/barcode/products/by-code?productCode=${encodeURIComponent(selectedProductCode)}`)
+      .then((r) => r.json())
+      .then((d) => setColorVariants(d.variants ?? []))
+      .catch(() => setColorVariants([]));
+  }, [selectedProductCode]);
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -68,23 +96,14 @@ export function BarcodeClient() {
   // 자동으로 판정한다 — Enter 입력은 즉시 판정, 이건 보조 수단.
   useEffect(() => {
     if (step !== "scan" || !scanValue.trim()) return;
-    const timer = setTimeout(() => {
+    debounceTimerRef.current = setTimeout(() => {
       handleScan();
     }, 400);
-    return () => clearTimeout(timer);
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scanValue, step]);
-
-  async function searchProducts(q: string) {
-    setProductQuery(q);
-    if (!q.trim()) {
-      setProductResults([]);
-      return;
-    }
-    const res = await fetch(`/api/barcode/products?q=${encodeURIComponent(q)}`);
-    const data = await res.json();
-    setProductResults(data.products ?? []);
-  }
 
   function pickProduct(p: BarcodeProductRow) {
     setSelectedProduct(p);
@@ -94,8 +113,13 @@ export function BarcodeClient() {
 
   async function handleScan() {
     const code = scanValue.trim();
-    if (!code || !selectedProduct || scanning) return;
+    if (!code || !selectedProduct || scanningRef.current) return;
+    scanningRef.current = true;
     setScanning(true);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
     try {
       const res = await fetch("/api/barcode/scan", {
         method: "POST",
@@ -121,6 +145,7 @@ export function BarcodeClient() {
       }
     } finally {
       setScanValue("");
+      scanningRef.current = false;
       setScanning(false);
       scanInputRef.current?.focus();
     }
@@ -211,60 +236,82 @@ export function BarcodeClient() {
 
       {step === "product" && (
         <div className="card">
-          <button className="btn secondary" style={{ marginBottom: 12 }} onClick={() => setStep("order")}>
+          <button
+            className="btn secondary"
+            style={{ marginBottom: 12 }}
+            onClick={() => {
+              setStep("order");
+              setSelectedProductCode("");
+            }}
+          >
             ← 오더번호 변경
           </button>
           <h3>2단계) 검수할 상품 선택 (오더: {orderNo})</h3>
-          <input
-            type="text"
-            placeholder="품번 또는 상품명 검색"
-            value={productQuery}
-            onChange={(e) => searchProducts(e.target.value)}
-            style={{ width: 320 }}
-            autoFocus
-          />
-          <table style={{ marginTop: 12 }}>
-            <thead>
-              <tr>
-                <th>이미지</th>
-                <th>상품코드 / 상품명</th>
-                <th>컬러</th>
-                <th>사이즈</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productResults.map((p) => (
-                <tr key={p.id} className="product-pick-row" onClick={() => pickProduct(p)}>
-                  <td>
-                    {p.imageUrl ? (
-                      <img
-                        src={p.imageUrl}
-                        alt={p.productName}
-                        className="product-thumb"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.visibility = "hidden";
-                        }}
-                      />
-                    ) : (
-                      ""
-                    )}
-                  </td>
-                  <td className="muted" style={{ textAlign: "left", whiteSpace: "normal" }}>
+
+          <div style={{ marginBottom: 12 }}>
+            <label>
+              상품
+              <br />
+              <select
+                value={selectedProductCode}
+                onChange={(e) => setSelectedProductCode(e.target.value)}
+                style={{ width: 420, padding: "6px 8px" }}
+              >
+                <option value="">-- 상품 선택 --</option>
+                {productCatalog.map((p) => (
+                  <option key={p.productCode} value={p.productCode}>
                     {p.productCode} · {p.productName}
-                  </td>
-                  <td className="color-cell">
-                    <span className="color-badge">{p.colorName}</span>
-                  </td>
-                  <td>{p.sizeName}</td>
-                </tr>
-              ))}
-              {productQuery && productResults.length === 0 && (
-                <tr>
-                  <td colSpan={4}>검색 결과가 없습니다.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {selectedProductCode && (
+            <div style={{ marginBottom: 12 }}>
+              <label>
+                컬러 / 사이즈
+                <br />
+                <select
+                  value={selectedVariantId}
+                  onChange={(e) => setSelectedVariantId(e.target.value)}
+                  style={{ width: 280, padding: "6px 8px" }}
+                >
+                  <option value="">-- 컬러 선택 --</option>
+                  {colorVariants.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.colorName}
+                      {v.sizeName !== "ONE SIZE" ? ` (${v.sizeName})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+
+          {selectedVariantId &&
+            (() => {
+              const variant = colorVariants.find((v) => v.id === selectedVariantId);
+              if (!variant) return null;
+              return (
+                <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
+                  {variant.imageUrl && (
+                    <img
+                      src={variant.imageUrl}
+                      alt={variant.productName}
+                      className="product-thumb"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.visibility = "hidden";
+                      }}
+                    />
+                  )}
+                  <span className="color-badge">{variant.colorName}</span>
+                  <button className="btn" onClick={() => pickProduct(variant)}>
+                    이 상품으로 검수 시작
+                  </button>
+                </div>
+              );
+            })()}
         </div>
       )}
 
