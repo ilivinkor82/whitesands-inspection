@@ -78,8 +78,8 @@ input[type="text"] {
 /* 현황 테이블 — 박스(.page-wide) 폭에 맞춰 늘어나고, 상품명 컬럼이 남는 공간을 가져간다 */
 .orders-table {
   font-size: 12px;
-  width: 100%;
   table-layout: fixed;
+  border-collapse: collapse;
 }
 
 .orders-table th,
@@ -87,6 +87,27 @@ input[type="text"] {
   padding: 4px 5px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.orders-table th {
+  position: relative;
+}
+
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  z-index: 1;
+}
+
+.col-resizer:hover,
+.col-resizer.active {
+  background: #8fa3c7;
 }
 
 .orders-table td.product-name {
