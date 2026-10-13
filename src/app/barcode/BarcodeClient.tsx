@@ -10,6 +10,7 @@ interface BarcodeProductRow {
   sizeName: string;
   barcode1: string;
   barcode2: string | null;
+  imageUrl: string | null;
 }
 
 type Step = "order" | "product" | "scan";
@@ -268,10 +269,22 @@ export function BarcodeClient() {
               오늘 검수 — 일치 {counts.matchCount} / 불일치 {counts.mismatchCount}
             </span>
           </div>
-          <h3>
-            {selectedProduct.productCode} · {selectedProduct.productName} · {selectedProduct.colorName} /{" "}
-            {selectedProduct.sizeName}
-          </h3>
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 8 }}>
+            {selectedProduct.imageUrl && (
+              <img
+                src={selectedProduct.imageUrl}
+                alt={selectedProduct.productName}
+                style={{ width: 120, height: 120, objectFit: "contain", border: "1px solid #ddd", borderRadius: 6, background: "white" }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            )}
+            <h3 style={{ margin: 0 }}>
+              {selectedProduct.productCode} · {selectedProduct.productName} · {selectedProduct.colorName} /{" "}
+              {selectedProduct.sizeName}
+            </h3>
+          </div>
 
           <input
             ref={scanInputRef}

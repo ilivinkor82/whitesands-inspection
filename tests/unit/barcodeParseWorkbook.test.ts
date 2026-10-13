@@ -75,4 +75,17 @@ describe("parseBarcodeWorkbook", () => {
     expect(rows[0].data.barcode1).toBe("8800230024546");
     expect(rows[0].data.sizeName).toBe("ONE SIZE");
   });
+
+  it("이미지URL 열을 인식하고, 없어도 에러가 아니다", () => {
+    const buffer = buildWorkbookBuffer([
+      ["상품코드", "상품명", "컬러", "바코드1", "이미지URL"],
+      ["GLM102Z9Z", "상품명", "애프리콧", "8800230027769", "https://example.com/a.jpg"],
+      ["GLM102Z9Z", "상품명", "그린빈", "8800230027776", ""],
+    ]);
+    const rows = parseBarcodeWorkbook(buffer);
+    expect(rows[0].error).toBeNull();
+    expect(rows[0].data.imageUrl).toBe("https://example.com/a.jpg");
+    expect(rows[1].error).toBeNull();
+    expect(rows[1].data.imageUrl).toBeUndefined();
+  });
 });

@@ -59,6 +59,7 @@ model BarcodeProduct {
   sizeName    String // 사이즈
   barcode1    String // 기본 바코드
   barcode2    String? // 보조 바코드 (있는 경우)
+  imageUrl    String? // 상품 이미지 URL (외부 호스팅 — 파일을 이 앱에 저장하지 않음)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

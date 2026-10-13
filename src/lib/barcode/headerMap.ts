@@ -4,7 +4,8 @@ export type BarcodeProductField =
   | "colorName"
   | "sizeName"
   | "barcode1"
-  | "barcode2";
+  | "barcode2"
+  | "imageUrl";
 
 interface FieldDef {
   field: BarcodeProductField;
@@ -19,6 +20,7 @@ export const BARCODE_FIELD_DEFS: FieldDef[] = [
   { field: "sizeName", headers: ["사이즈"], required: false },
   { field: "barcode1", headers: ["바코드1", "바코드"], required: true },
   { field: "barcode2", headers: ["바코드2"], required: false },
+  { field: "imageUrl", headers: ["이미지URL", "이미지", "사진URL", "사진"], required: false },
 ];
 
 // DB 유니크 키 = 상품코드+컬러+사이즈. 사이즈는 파일에 없으면 "ONE SIZE"로 채운다
@@ -35,6 +37,7 @@ export const BARCODE_FIELD_LABEL: Record<BarcodeProductField, string> = {
   sizeName: "사이즈",
   barcode1: "바코드1",
   barcode2: "바코드2",
+  imageUrl: "이미지URL",
 };
 
 function normalizeHeader(raw: string): string {

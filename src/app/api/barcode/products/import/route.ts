@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   for (const row of rows) {
     if (row.error) continue;
-    const { productCode, productName, colorName, sizeName, barcode1, barcode2 } = row.data;
+    const { productCode, productName, colorName, sizeName, barcode1, barcode2, imageUrl } = row.data;
 
     const existing = await prisma.barcodeProduct.findUnique({
       where: {
@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
           productName: productName ?? existing.productName,
           barcode1: barcode1 ?? existing.barcode1,
           barcode2: barcode2 ?? existing.barcode2,
+          imageUrl: imageUrl ?? existing.imageUrl,
         },
       });
       updatedCount += 1;
@@ -53,6 +54,7 @@ export async function POST(request: NextRequest) {
           sizeName: sizeName!,
           barcode1: barcode1!,
           barcode2: barcode2 ?? null,
+          imageUrl: imageUrl ?? null,
         },
       });
       insertedCount += 1;
