@@ -33,16 +33,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const account = await getCurrentAccount();
 
-  // 제품검수수량(inspectedQty)은 worker(JSC)도 직접 입력한다 — 바코드검수수량(scannedQty)과
-  // 분리된 뒤로는 worker가 고쳐도 스캔 집계와 섞일 일이 없다. 불량수량(defectQty)은
-  // 여전히 바코드 불일치 스캔으로도 쌓이기 때문에, worker가 직접 고치면 스캔 집계와
-  // 어긋날 수 있어 admin 전용으로 막는다 (화면에서 입력칸을 숨기는 것과 별개로 API
-  // 직접 호출도 차단). 바코드검수수량(scannedQty)은 스캔 전용 집계라 애초에 이
-  // 스키마에 없어서 아무도 PATCH로 못 건드린다.
-  if (account?.role !== "admin" && parsed.data.defectQty !== undefined) {
-    return NextResponse.json({ error: "불량수량은 관리자 계정만 수정할 수 있습니다" }, { status: 403 });
-  }
-
+  // 현황(이 PATCH)의 인라인 수정은 worker/admin 권한 차이가 없다 — 역할 구분은
+  // 삭제(DELETE, 아래)처럼 되돌리기 어려운 파괴적 기능에만 둔다. 바코드검수수량
+  // (scannedQty)은 스캔 전용 집계라 애초에 이 스키마에 없어서 PATCH 자체로 아무도
+  // 못 건드린다.
   const updated = await prisma.orderLine.update({
     where: { id },
     data: { ...parsed.data, updatedBy: account?.accountId ?? null },

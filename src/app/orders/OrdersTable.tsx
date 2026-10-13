@@ -194,19 +194,15 @@ export function OrdersTable() {
                     />
                   </td>
                   <td className="text-right">
-                    {isAdmin ? (
-                      <input
-                        type="number"
-                        defaultValue={row.defectQty ?? ""}
-                        onBlur={(e) =>
-                          patchRow(row.id, {
-                            defectQty: e.target.value === "" ? null : Number(e.target.value),
-                          })
-                        }
-                      />
-                    ) : (
-                      row.defectQty ?? ""
-                    )}
+                    <input
+                      type="number"
+                      defaultValue={row.defectQty ?? ""}
+                      onBlur={(e) =>
+                        patchRow(row.id, {
+                          defectQty: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                      }
+                    />
                   </td>
                   <td className="text-right">{row.goodQty ?? ""}</td>
                   <td>
